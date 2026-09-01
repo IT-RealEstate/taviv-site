@@ -1,0 +1,140 @@
+
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  padding-inline: 32px;
+  border-radius: 25px;
+  border: 0;
+  background: var(--text-primary);
+  color: var(--bg-base);
+  font-family: var(--font-sans);
+  font-size: var(--size-cta);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+  transition: opacity 200ms ease;
+}
+.btn:hover {
+  opacity: 0.85;
+}
+
+.btn--compact {
+  height: 44px;
+  padding-inline: 22px;
+  border-radius: 22px;
+  font-size: 15px;
+}
+
+@media (max-width: 400px) {
+  .btn {
+    max-width: 100%;
+    height: auto;
+    min-block-size: 50px;
+    padding-inline: 20px;
+    padding-block: 10px;
+    white-space: normal;
+    line-height: 1.3;
+    text-align: center;
+  }
+}
+
+.accordion {
+  border-block-end: 1px solid var(--hairline-dark);
+}
+.accordion:first-child {
+  border-block-start: 1px solid var(--hairline-dark);
+}
+
+.accordion__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-block-size: 44px;
+  padding-block: 14px;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-sans);
+  font-size: var(--size-label);
+  font-weight: 500;
+  line-height: var(--lh-label);
+  color: var(--text-primary);
+}
+
+.accordion__summary::-webkit-details-marker { display: none; }
+.accordion__summary::marker { content: ""; }
+
+.accordion__summary:hover .accordion__label {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.accordion__summary:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.accordion__label {
+  min-width: 0;
+}
+
+.accordion__marker {
+  position: relative;
+  flex: none;
+  inline-size: 14px;
+  block-size: 14px;
+}
+.accordion__marker::before,
+.accordion__marker::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 50%;
+  inline-size: 14px;
+  block-size: 1px;
+  background: var(--text-secondary);
+}
+.accordion__marker::after {
+  transform: rotate(90deg);
+}
+.accordion[open] .accordion__marker::after {
+  opacity: 0;
+}
+
+.accordion__panel {
+  padding-block-end: 22px;
+  max-width: var(--measure-body);
+}
+
+@media (max-width: 767px) {
+  .accordion__summary {
+    font-size: var(--size-body);
+    padding-block: 13px;
+  }
+  .accordion__panel {
+    padding-block-end: 18px;
+  }
+}
+
+@media (forced-colors: active) {
+  .btn,
+  .btn--compact {
+    border: 1px solid ButtonBorder;
+    background: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+  }
+  .accordion__marker::before,
+  .accordion__marker::after {
+    background: CanvasText;
+    forced-color-adjust: none;
+  }
+  .accordion__summary:focus-visible {
+    outline: 2px solid Highlight;
+  }
+}

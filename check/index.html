@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>לעשות סדר במקרה — בדיקת התאמה ראשונית | טביב שמאות</title>
+  <meta name="description" content="בדיקת התאמה ראשונית ללא עלות, כדי להבין מה כבר ידוע, מה עדיין חסר ומה נכון לעשות עכשיו.">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/brand/favicon-32.png">
+  <link rel="apple-touch-icon" href="../assets/brand/apple-touch-icon.png">
+
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/intake.css">
+</head>
+<body>
+  <a class="skip" href="#main">דילוג לתוכן</a>
+
+  
+  <header class="intake-header">
+    <div class="intake-header__in">
+      <a class="intake-header__brand" href="/">טביב שמאות</a>
+      <a class="intake-header__phone" href="tel:+972552617625" dir="ltr" aria-label="חיוג לטביב שמאות: 055-2617625">055-2617625</a>
+    </div>
+  </header>
+
+  <main id="main" class="intake-main">
+
+    
+    <div class="intake-fallback" data-intake-fallback>
+      <h1 class="intake-fallback__title">לא ניתן לטעון את הבדיקה המקוונת כרגע</h1>
+      <p class="intake-fallback__body">אפשר ליצור קשר ישירות ולהמשיך משם.</p>
+      <a class="btn" href="tel:+972552617625" dir="ltr">055-2617625</a>
+    </div>
+
+    <div class="intake-app" data-intake-app hidden>
+      <form class="intake-form" data-intake-form novalidate>
+
+        <h1 class="intake-form__title">בדיקת התאמה ראשונית</h1>
+        <p class="intake-form__lede">ללא עלות. כדי לעשות סדר במקרה, להבין מה עדיין חסר ולדעת מה נכון לעשות עכשיו.</p>
+
+        
+        <section class="intake-step" data-step="1" hidden>
+          <p class="intake-step__progress">שלב 1 מתוך 3</p>
+          <h2 class="intake-step__title" tabindex="-1">סוג הנזק</h2>
+
+          <fieldset class="intake-fieldset" data-group="damage_type">
+            <legend class="sr-only">סוג הנזק</legend>
+            <div class="intake-options">
+              <label class="intake-option"><input type="radio" name="damage_type" value="WATER" required aria-required="true" aria-describedby="damage_type-error"><span>מים או רטיבות</span></label>
+              <label class="intake-option"><input type="radio" name="damage_type" value="FIRE" required aria-required="true" aria-describedby="damage_type-error"><span>אש או עשן</span></label>
+              <label class="intake-option"><input type="radio" name="damage_type" value="BURGLARY" required aria-required="true" aria-describedby="damage_type-error"><span>פריצה</span></label>
+              <label class="intake-option"><input type="radio" name="damage_type" value="STORM" required aria-required="true" aria-describedby="damage_type-error"><span>סערה או מזג אוויר</span></label>
+              <label class="intake-option"><input type="radio" name="damage_type" value="STRUCTURAL" required aria-required="true" aria-describedby="damage_type-error"><span>סדקים או נזק מבני</span></label>
+              <label class="intake-option"><input type="radio" name="damage_type" value="OTHER" required aria-required="true" aria-describedby="damage_type-error"><span>אחר / לא בטוח</span></label>
+            </div>
+            <p class="intake-error" id="damage_type-error"></p>
+          </fieldset>
+
+          <div class="intake-step__nav">
+            <button type="button" class="btn" data-action="next">הבא</button>
+          </div>
+        </section>
+
+        
+        <section class="intake-step" data-step="2" hidden>
+          <p class="intake-step__progress">שלב 2 מתוך 3</p>
+          <h2 class="intake-step__title" tabindex="-1">מצב המקרה</h2>
+
+          <fieldset class="intake-fieldset" data-group="case_state" aria-describedby="case_state-help">
+            <legend class="sr-only">מצב המקרה</legend>
+            <p class="intake-field__help" id="case_state-help">אפשר לבחור את מה שהכי קרוב.</p>
+            <div class="intake-options">
+              <label class="intake-option"><input type="radio" name="case_state" value="RECENT_DAMAGE" required aria-required="true" aria-describedby="case_state-error"><span>הנזק קרה עכשיו או לאחרונה</span></label>
+              <label class="intake-option"><input type="radio" name="case_state" value="SOURCE_UNKNOWN" required aria-required="true" aria-describedby="case_state-error"><span>מקור הנזק עדיין לא ידוע</span></label>
+              <label class="intake-option"><input type="radio" name="case_state" value="SOURCE_FIXED_DAMAGE_REMAINS" required aria-required="true" aria-describedby="case_state-error"><span>המקור אותר או תוקן ונשאר נזק</span></label>
+              <label class="intake-option"><input type="radio" name="case_state" value="ASSESSMENT_OR_OFFER_RECEIVED" required aria-required="true" aria-describedby="case_state-error"><span>כבר התקבלה שומה או הצעת פיצוי</span></label>
+              <label class="intake-option"><input type="radio" name="case_state" value="ACTIVE_DISPUTE_OR_PROCEEDING" required aria-required="true" aria-describedby="case_state-error"><span>קיים סכסוך או הליך פעיל</span></label>
+              <label class="intake-option"><input type="radio" name="case_state" value="UNSURE" required aria-required="true" aria-describedby="case_state-error"><span>איני בטוח מה מתאים</span></label>
+            </div>
+            <p class="intake-error" id="case_state-error"></p>
+          </fieldset>
+
+          <div class="intake-step__nav intake-step__nav--split">
+            <button type="button" class="intake-btn-back" data-action="back">חזרה</button>
+            <button type="button" class="btn" data-action="next">הבא</button>
+          </div>
+        </section>
+
+        
+        <section class="intake-step" data-step="3" hidden>
+          <p class="intake-step__progress">שלב 3 מתוך 3</p>
+          <h2 class="intake-step__title" tabindex="-1">פרטי התקשרות</h2>
+
+          <div class="intake-field">
+            <label class="intake-field__label" for="full_name">שם מלא</label>
+            <input class="intake-field__input" type="text" id="full_name" name="full_name" autocomplete="name" required aria-required="true" aria-describedby="full_name-error">
+            <p class="intake-error" id="full_name-error"></p>
+          </div>
+
+          <div class="intake-field">
+            <label class="intake-field__label" for="phone_raw">טלפון</label>
+            <input class="intake-field__input" type="tel" id="phone_raw" name="phone_raw" autocomplete="tel" inputmode="tel" dir="ltr" required aria-required="true" aria-describedby="phone_raw-error">
+            <p class="intake-error" id="phone_raw-error"></p>
+          </div>
+
+          <div class="intake-field">
+            <label class="intake-field__label" for="email">אימייל</label>
+            <input class="intake-field__input" type="email" id="email" name="email" autocomplete="email" inputmode="email" dir="ltr" required aria-required="true" aria-describedby="email-error">
+            <p class="intake-error" id="email-error"></p>
+          </div>
+
+          
+          <div class="intake-field">
+            <label class="intake-field__label" for="property_city">יישוב הנכס</label>
+            <p class="intake-field__help" id="property_city-help">היישוב שבו נמצא הנכס. לא נדרשת כתובת מלאה.</p>
+            <input class="intake-field__input" type="text" id="property_city" name="property_city" autocomplete="address-level2" required aria-required="true" aria-describedby="property_city-help property_city-error">
+            <p class="intake-error" id="property_city-error"></p>
+          </div>
+
+          
+          <div class="intake-field">
+            <label class="intake-field__label" for="short_description">תיאור קצר — לא חובה</label>
+            <p class="intake-field__help" id="short_description-help">כמה מילים, אם יש משהו שחשוב שנדע מראש.</p>
+            <textarea class="intake-field__input intake-field__textarea" id="short_description" name="short_description" rows="3" spellcheck="true" aria-describedby="short_description-help short_description-error"></textarea>
+            <p class="intake-error" id="short_description-error"></p>
+          </div>
+
+          
+          <div class="intake-honeypot" aria-hidden="true">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
+
+          
+          <div class="intake-legal">
+            <p>מסירת הפרטים היא מרצון. בלעדיהם לא נוכל לבחון את הפנייה ולא נוכל לחזור אליכם.</p>
+            <p>הפרטים משמשים את טביב שמאות, שמאות רכוש, אך ורק לבחינת הפנייה וליצירת קשר בנוגע למקרה.</p>
+            
+            <p>הפרטים נשמרים בשירותי Google, שעשויים לעבד מידע גם מחוץ לישראל.</p>
+            <p>הפרטים ישמשו לבדיקת התאמה וליצירת קשר בנוגע למקרה. שליחת הטופס אינה פותחת WhatsApp ואינה שולחת את הפרטים ל־Meta.</p>
+            <p>
+              אפשר לפנות אלינו בכל עת לעיין בפרטים, לתקן אותם או לבקש למחוק אותם:
+              <a href="mailto:ido89t@gmail.com" dir="ltr">ido89t@gmail.com</a> ·
+              <a href="tel:+972552617625" dir="ltr">055-2617625</a>
+            </p>
+            <p><a href="/legal#privacy">מדיניות פרטיות ותנאי שימוש</a></p>
+          </div>
+
+          <div class="intake-step__nav intake-step__nav--split">
+            <button type="button" class="intake-btn-back" data-action="back">חזרה</button>
+            <button type="submit" class="btn">שליחת פרטים</button>
+          </div>
+
+          
+          <p class="intake-legal__validity">האתר אינו מאפשר רכישה, הזמנה או תשלום. שליחת הפרטים מיועדת לבדיקת התאמה וליצירת קשר בלבד ואינה יוצרת התקשרות מחייבת.</p>
+          <p class="intake-legal__validity">בשליחה אתם מאשרים את מדיניות הפרטיות ותנאי השימוש, כולל שמירה ועיבוד בשירותי ענן מחוץ לישראל.</p>
+
+          
+          <p class="intake-sending" role="status" aria-live="polite" data-sending-status hidden>שולחים את הפרטים…</p>
+
+          <div class="intake-submit-error" role="alert" data-submit-error tabindex="-1" hidden>
+            <h3 class="intake-submit-error__title">לא הצלחנו לשמור את הפרטים</h3>
+            <p class="intake-submit-error__body">הפרטים שהזנת נשארו כאן. אפשר לנסות שוב בעוד רגע.</p>
+            <button type="button" class="btn" data-action="retry-submit">לנסות שוב</button>
+            <p class="intake-submit-error__fallback" data-submit-fallback hidden>אפשר גם להתקשר: <a href="tel:+972552617625" dir="ltr">055-2617625</a></p>
+          </div>
+        </section>
+
+      </form>
+
+      
+      <section class="intake-success" data-intake-success tabindex="-1" role="status" aria-live="polite" hidden>
+        <h1 class="intake-success__title">זהו המסך שיוצג לאחר שליחה</h1>
+        
+        <p class="intake-success__body">זו גרסת בדיקה טרם ההשקה. לא נשלח דבר, ולא הגיעה אלינו שום פנייה. בגרסה החיה יופיע כאן האישור, ואחריו שיחה קצרה שבה נעבור על מה שקרה.</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="../assets/js/attribution.js"></script>
+  <script src="../assets/js/intake-config.js"></script>
+  <script src="../assets/js/intake.js"></script>
+</body>
+</html>

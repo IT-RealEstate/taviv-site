@@ -1,0 +1,128 @@
+
+
+@font-face {
+  font-family: "IBM Plex Sans Hebrew";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("../fonts/IBMPlexSansHebrew-Light.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans Hebrew";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/IBMPlexSansHebrew-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans Hebrew";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/IBMPlexSansHebrew-Medium.woff2") format("woff2");
+}
+
+:root {
+  
+  --bg-base: #080A0C;
+  --bg-deep: #111518;
+  --bg-graphite: #1A2024;
+  --text-primary: #ECEEEF;
+  --text-secondary: #A7AFB5;
+  --accent: #0E789A;
+  --hairline-dark: rgba(236, 238, 239, 0.14);
+  --focus-ring: #ECEEEF;
+
+  
+  --header-cta-blue: #0D7293;
+
+  
+  --brand-wordmark-accent: #1F8EB1;
+
+  
+  --font-sans: "IBM Plex Sans Hebrew", "Heebo", system-ui, -apple-system, "Segoe UI", "Arial Hebrew", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  
+  --size-hero-h1: 72px;
+  --lh-hero-h1: 1.08;
+  --size-section-h: 48px;
+  --lh-section-h: 1.15;
+  --size-statement: 32px;
+  --lh-statement: 1.25;
+  --size-lede: 24px;
+  --lh-lede: 1.45;
+  --size-label: 22px;
+  --lh-label: 1.35;
+  --size-body: 18px;
+  --lh-body: 1.70;
+  --size-microcopy: 15px;
+  --lh-microcopy: 1.50;
+  --size-cta: 17px;
+
+  --measure-head: 760px;
+  --measure-body: 640px;
+  --measure-statement: 620px;
+
+  
+  --page-max: 1200px;
+  --gutter: 20px;
+
+  
+  --motion-duration: 400ms;
+  --motion-easing: ease-out;
+  --motion-distance: 10px;
+  --motion-stagger-max: 80ms;
+
+  
+  --header-height: 72px;
+  --header-height-compact: 58px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 40px;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --size-hero-h1: 56px;
+    --lh-hero-h1: 1.12;
+    --size-section-h: 38px;
+    --lh-section-h: 1.20;
+    --size-statement: 28px;
+    --lh-statement: 1.30;
+    --size-lede: 21px;
+    --lh-lede: 1.50;
+    --size-label: 19px;
+    --lh-label: 1.35;
+    --size-body: 18px;
+    --size-microcopy: 15px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 72px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --gutter: 20px;
+    
+    --size-hero-h1: 32px;
+    --lh-hero-h1: 1.16;
+    --size-section-h: 30px;
+    --lh-section-h: 1.20;
+    --size-statement: 24px;
+    --lh-statement: 1.30;
+    --size-lede: 19px;
+    --lh-lede: 1.50;
+    --size-label: 19px;
+    --lh-label: 1.35;
+    --size-body: 17px;
+    --lh-body: 1.70;
+    --size-microcopy: 15px;
+  }
+}

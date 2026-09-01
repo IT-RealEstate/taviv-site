@@ -1,0 +1,7 @@
+# PRELAUNCH DEPLOYMENT — the production site, not yet public.
+#
+# Disallow everything until launch. Every page additionally carries
+# <meta name="robots" content="noindex, nofollow">, so a crawler that
+# ignores this file still gets the instruction from the page itself.
+User-agent: *
+Disallow: /
