@@ -22,6 +22,42 @@
     }, { passive: true });
   }
 
+  function pageSlug() {
+    var path = location.pathname.replace(/\/index\.html$/, '/');
+    if (path === '/' || path === '') { return 'home'; }
+    return path.replace(/^\/|\/$/g, '').replace(/[^a-z0-9/_-]/gi, '').toLowerCase();
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-faq-item]'), function (item) {
+    item.addEventListener('toggle', function () {
+      if (!window.ATTRIBUTION || typeof window.ATTRIBUTION.recordUiEvent !== 'function') { return; }
+      window.ATTRIBUTION.recordUiEvent(item.open ? 'faq_open' : 'faq_close',
+        item.getAttribute('data-faq-id') || '', pageSlug());
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ui-location]:not([data-wa-link])'), function (el) {
+    el.addEventListener('click', function () {
+      if (window.ATTRIBUTION && typeof window.ATTRIBUTION.recordUiEvent === 'function') {
+        window.ATTRIBUTION.recordUiEvent('cta_click', el.getAttribute('data-ui-location'), pageSlug());
+      }
+    });
+  });
+
+  var contact = window.TAVIV_CONTACT;
+  if (contact) {
+    var waUrl = contact.whatsappUrl();
+    Array.prototype.forEach.call(document.querySelectorAll('[data-wa-link]'), function (link) {
+      link.setAttribute('href', waUrl);
+      link.addEventListener('click', function () {
+        if (window.ATTRIBUTION && typeof window.ATTRIBUTION.recordUiEvent === 'function') {
+          var where = link.getAttribute('data-ui-location') || 'header';
+          window.ATTRIBUTION.recordUiEvent('whatsapp_click', where, pageSlug());
+        }
+      });
+    });
+  }
+
   var menuBtn = document.querySelector('[data-menu-toggle]');
   var menuPanel = document.querySelector('[data-menu]');
 
@@ -161,7 +197,6 @@
       var id = card.getAttribute('data-service');
       var toggle = card.querySelector('[data-svc-toggle]');
       var body = card.querySelector('[data-svc-body]');
-      var reveal = card.querySelector('[data-svc-reveal]');
       var price = card.querySelector('[data-svc-price]');
       var cta = card.querySelector('[data-service-interest]');
       if (!id || !body) { return; }
@@ -173,32 +208,17 @@
           toggle.hidden = true;
         }
         setMember(svcState.body, id, true);
+        if (price) { setMember(svcState.price, id, true); }
         saveSvcState();
         if (record) {
           logSvc('service_details_open', id);
+          if (price) { logSvc('service_price_reveal', id); }
           focusRevealed(body);
-        }
-      };
-
-      var openPrice = function (record) {
-        if (!reveal || !price) { return; }
-        price.hidden = false;
-        reveal.setAttribute('aria-expanded', 'true');
-        reveal.hidden = true;
-        setMember(svcState.price, id, true);
-        saveSvcState();
-        if (record) {
-          logSvc('service_price_reveal', id);
-          focusRevealed(price);
         }
       };
 
       if (toggle) {
         toggle.addEventListener('click', function () { openBody(true); });
-      }
-
-      if (reveal && price) {
-        reveal.addEventListener('click', function () { openPrice(true); });
       }
 
       if (cta) {
@@ -207,12 +227,9 @@
         });
       }
 
-      cards[id] = { openBody: openBody, openPrice: openPrice, hasToggle: !!toggle };
+      cards[id] = { openBody: openBody, hasToggle: !!toggle };
 
-      if (svcState.price.indexOf(id) !== -1) {
-        if (toggle) { openBody(false); }
-        openPrice(false);
-      } else if (toggle && svcState.body.indexOf(id) !== -1) {
+      if (toggle && (svcState.body.indexOf(id) !== -1 || svcState.price.indexOf(id) !== -1)) {
         openBody(false);
       }
     });
@@ -229,8 +246,6 @@
       var resetBtn = router.querySelector('[data-router-reset]');
       var feasToggle = router.querySelector('[data-feas-toggle]');
       var feasPanel = router.querySelector('[data-feas]');
-      var closeCta = document.querySelector('[data-close-cta]');
-
       var labelFor = function (name, value) {
         var input = router.querySelector('input[name="' + name + '"][value="' + value + '"]');
         var label = input && input.parentNode.querySelector('.rt__opt-label');
@@ -256,8 +271,6 @@
         Array.prototype.forEach.call(routeBlocks, function (el) {
           el.hidden = el.getAttribute('data-route') !== active;
         });
-
-        if (closeCta) { closeCta.hidden = active === 'unsure'; }
 
         if (answered && summary) {
           answered.hidden = !anyAnswer;
@@ -302,14 +315,17 @@
       }
 
       if (feasToggle && feasPanel) {
+        var feasPrice = feasPanel.querySelector('[data-svc-price]');
         var openFeas = function (record) {
           feasPanel.hidden = false;
           feasToggle.setAttribute('aria-expanded', 'true');
           feasToggle.hidden = true;
           setMember(svcState.body, 'remote_feasibility', true);
+          if (feasPrice) { setMember(svcState.price, 'remote_feasibility', true); }
           saveSvcState();
           if (record) {
             logSvc('service_details_open', 'remote_feasibility');
+            if (feasPrice) { logSvc('service_price_reveal', 'remote_feasibility'); }
             focusRevealed(feasPanel);
           }
         };

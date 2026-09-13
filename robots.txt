@@ -1,7 +1,10 @@
-# PRELAUNCH DEPLOYMENT — the production site, not yet public.
-#
-# Disallow everything until launch. Every page additionally carries
-# <meta name="robots" content="noindex, nofollow">, so a crawler that
-# ignores this file still gets the instruction from the page itself.
+# /check/ and /legal/ are intentionally NOT Disallowed here even though
+# both carry <meta name="robots" content="noindex, nofollow">: blocking a
+# noindex page via robots.txt stops crawlers from ever reading that meta
+# tag, which is the documented anti-pattern (Google can still list a
+# robots.txt-blocked URL with no snippet). The per-page noindex meta tag
+# is the correct, sufficient mechanism for both routes.
 User-agent: *
-Disallow: /
+Allow: /
+
+Sitemap: https://taviv.co.il/sitemap.xml

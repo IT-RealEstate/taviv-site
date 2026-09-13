@@ -112,6 +112,38 @@
 
   var SERVICE_EVENTS = ['service_details_open', 'service_price_reveal', 'service_cta_click'];
 
+  var UI_KEY = 'ui_events_v1';
+  var UI_EVENTS = ['faq_open', 'faq_close', 'whatsapp_click', 'callback_request', 'cta_click',
+                   'contact_autosave_eligible', 'contact_autosave_started',
+                   'contact_autosave_succeeded', 'contact_autosave_failed',
+                   'damage_type_saved', 'case_status_saved', 'qualification_completed',
+                   'post_save_whatsapp_clicked'];
+
+  function loadUi() {
+    try {
+      var raw = sessionStorage.getItem(UI_KEY);
+      var parsed = raw ? JSON.parse(raw) : null;
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function recordUiEvent(eventName, id, page) {
+    if (UI_EVENTS.indexOf(eventName) === -1) { return; }
+    if (typeof id !== 'string' || !/^[a-z0-9_]{1,48}$/.test(id)) { return; }
+    var record = loadUi();
+    var log = typeof record.log === 'string' && record.log ? record.log.split(',') : [];
+    if (log.length >= 60) { return; }
+    var route = typeof page === 'string' && /^[a-z0-9/_-]{0,40}$/.test(page) ? page : '';
+    log.push(eventName + ':' + id + (route ? '@' + route : ''));
+    record.log = log.join(',');
+    try {
+      sessionStorage.setItem(UI_KEY, JSON.stringify(record));
+    } catch (e) {
+    }
+  }
+
   function recordServiceEvent(eventName, serviceId) {
     if (SERVICE_EVENTS.indexOf(eventName) === -1) return;
     if (SERVICE_INTERESTS.indexOf(serviceId) === -1) return;
@@ -188,6 +220,12 @@
       return typeof r.service_log === 'string' ? r.service_log : '';
     },
     recordServiceEvent: recordServiceEvent,
-    recordCtaLocation: recordCtaLocation
+    recordCtaLocation: recordCtaLocation,
+
+    recordUiEvent: recordUiEvent,
+    uiLog: function () {
+      var r = loadUi();
+      return r.log || '';
+    }
   };
 })();
