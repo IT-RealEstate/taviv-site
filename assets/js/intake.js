@@ -77,7 +77,9 @@
       property_city: '',
       short_description: '',
       form_started_at: '',
-      lead_saved: false
+      lead_saved: false,
+      synced_damage_type: '',
+      synced_case_state: ''
     };
 
     var persistInFlight = false;
@@ -88,8 +90,10 @@
     var leadCreated = false;          // the server confirmed a row exists
     var savedSnapshot = null;         // the exact values that row was created from
     var userInteracted = false;       // a real edit, not an autofill-on-load
-    var enrichSeq = 0;
-    var enrichInFlightFor = '';       // which question is being saved right now
+    var answerSaveInFlight = false;
+    var answerRetryTimer = null;
+    var answerFailures = 0;
+    var slowSaveTimer = null;
     var phase = 'contact';            // contact -> damage_type -> case_state -> done
 
     function newLeadId() {
@@ -339,6 +343,7 @@
       inFlightSeq = seq;
       setContactReadOnly(true);
       setAutosaveStatus(null);
+      startSlowSaveNotice();
       hideSubmitError();
       ui('contact_autosave_started', 'contact');
 
@@ -350,6 +355,7 @@
 
       var finish = function (ok) {
         persistInFlight = false;
+        clearSlowSaveNotice();
         if (ok) onAutosaveSuccess(snapshot, seq);
         else onAutosaveFailure();
       };
@@ -370,13 +376,7 @@
           });
         }
 
-        return attempt().then(function (first) {
-          if (first.confirmed) return true;
-          if (!isRetryable(first.json)) return false;
-          return new Promise(function (resolve) {
-            window.setTimeout(resolve, RETRY_DELAY_MS);
-          }).then(attempt).then(function (second) { return second.confirmed; });
-        });
+        return attempt().then(function (first) { return first.confirmed; });
       }).then(finish, function () { finish(false); });
     }
 
@@ -412,7 +412,10 @@
     function markContactSaved() {
       setContactReadOnly(true);
       var contact = form.querySelector('.intake-step[data-step="contact"]');
-      if (contact) { contact.setAttribute('data-saved', 'true'); }
+      if (contact) {
+        contact.setAttribute('data-saved', 'true');
+        contact.hidden = true;
+      }
       var nav = contact && contact.querySelector('.intake-step__nav');
       if (nav) { nav.hidden = true; }
     }
@@ -422,7 +425,15 @@
       savedSnapshot = contactValues();
       setAutosaveStatus('saved');
       markContactSaved();
-      revealQuestion('damage_type');
+      QUESTIONS.forEach(function (name) {
+        if (!state[name]) return;
+        var input = form.querySelector('#' + name + '_' + state[name]);
+        if (input) input.checked = true;
+        collapseQuestion(name, state[name]);
+      });
+      if (state.damage_type && state.case_state) showCompletion();
+      else revealQuestion(state.damage_type ? 'case_state' : 'damage_type');
+      flushAnswers();
     }
 
     function onAutosaveFailure() {
@@ -442,7 +453,8 @@
       if (errorEl) {
         errorEl.hidden = false;
         var fb = form.querySelector('[data-submit-fallback]');
-        if (fb) fb.hidden = failureCount < 2;
+        if (fb) fb.hidden = false;
+        setSyncStatus('לא הצלחנו לאשר את שמירת הפרטים. אפשר לנסות שוב או להמשיך ב־WhatsApp.', true);
       }
     }
 
@@ -495,7 +507,8 @@
       return postIntakeJson(body).then(function (json) {
         return {
           ok: !!(json && json.ok === true && json.lead_id === payload.lead_id),
-          enriched: json && Array.isArray(json.enriched) ? json.enriched : []
+          enriched: json && Array.isArray(json.enriched) ? json.enriched : [],
+          code: json && typeof json.code === 'string' ? json.code : ''
         };
       }).catch(function () { return { ok: false, enriched: [] }; });
     }
@@ -554,6 +567,10 @@
       var section = questionSection(name);
       if (!section) return;
       phase = name;
+      QUESTIONS.forEach(function (other) {
+        var otherSection = questionSection(other);
+        if (otherSection) otherSection.hidden = other !== name;
+      });
       section.hidden = false;
       measure('intake_step_view', { intake_step_id: name });
 
@@ -586,52 +603,92 @@
       if (btn) btn.hidden = !visible;
     }
 
-    function saveAnswer(name, value, isRevision) {
-      if (enrichInFlightFor === name) return;
-      enrichInFlightFor = name;
-      enrichSeq += 1;
-      var seq = enrichSeq;
+    function pendingAnswers() {
+      return QUESTIONS.filter(function (name) {
+        return state[name] && state[name] !== state['synced_' + name];
+      });
+    }
 
-      state[name] = value;
-      setQuestionRetry(name, false);
-      setQuestionStatus(name, QUESTION_SAVING);
+    function setSyncStatus(text, retry) {
+      var status = document.querySelector('[data-sync-status]');
+      var retryButton = document.querySelector('[data-sync-retry]');
+      var syncFallback = document.querySelector('[data-sync-fallback]');
+      if (status) { status.hidden = !text; status.textContent = text || ''; }
+      if (retryButton) retryButton.hidden = !retry;
+      if (syncFallback) syncFallback.hidden = !text;
+      var title = document.querySelector('.intake-success__title');
+      if (title) title.textContent = pendingAnswers().length
+        ? 'פרטי ההתקשרות נשמרו' : 'הפרטים נשמרו';
+    }
 
-      var payload = { lead_id: state.lead_id };
-      payload[name] = value;
+    function startSlowSaveNotice() {
+      clearSlowSaveNotice();
+      slowSaveTimer = window.setTimeout(function () {
+        if (persistInFlight) setSyncStatus('השמירה מתעכבת. אפשר להמשיך ב־WhatsApp או להמתין כאן.', false);
+      }, 4000);
+    }
 
-      sendEnrichPayload(payload).then(function (result) {
-        if (seq !== enrichSeq) return;          // a newer choice supersedes this
-        enrichInFlightFor = '';
+    function clearSlowSaveNotice() {
+      if (slowSaveTimer) window.clearTimeout(slowSaveTimer);
+      slowSaveTimer = null;
+      setSyncStatus('', false);
+    }
 
-        var confirmed = result.ok && result.enriched.indexOf(name) !== -1;
-        if (!confirmed) {
-          setQuestionStatus(name, QUESTION_FAILED);
-          setQuestionRetry(name, true);
-          if (!isRevision) {
-            window.setTimeout(function () {
-              if (state[name] === value && phase === name) saveAnswer(name, value, true);
-            }, RETRY_DELAY_MS);
+    function flushAnswers() {
+      if (!leadCreated || answerSaveInFlight || answerRetryTimer) return;
+      var pending = pendingAnswers();
+      if (!pending.length) {
+        setSyncStatus('', false);
+        if (state.damage_type && state.case_state) {
+          ui('qualification_completed', 'check');
+          if (phase === 'done') {
+            try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
           }
+        }
+        return;
+      }
+      var payload = { lead_id: state.lead_id };
+      pending.forEach(function (name) { payload[name] = state[name]; });
+      answerSaveInFlight = true;
+      setSyncStatus('פרטי ההתקשרות נשמרו. שומר את התשובות… אפשר להמשיך ב־WhatsApp.', false);
+      sendEnrichPayload(payload).then(function (result) {
+        answerSaveInFlight = false;
+        pending.forEach(function (name) {
+          if (!result.ok || result.enriched.indexOf(name) === -1) return;
+          state['synced_' + name] = payload[name];
+          measure('intake_step_complete', { intake_step_id: name });
+          ui(name === 'damage_type' ? 'damage_type_saved' : 'case_status_saved', payload[name].toLowerCase());
+        });
+        saveState();
+        if (!pendingAnswers().length) {
+          answerFailures = 0;
+          flushAnswers();
           return;
         }
-
-        setQuestionStatus(name, '');
-        setQuestionRetry(name, false);
-        measure('intake_step_complete', { intake_step_id: name });
-        ui(name === 'damage_type' ? 'damage_type_saved' : 'case_status_saved', value.toLowerCase());
-        collapseQuestion(name, value);
-
-        var next = QUESTIONS[QUESTIONS.indexOf(name) + 1];
-        if (next && !state[next]) {
-          revealQuestion(next);
-        } else if (!next) {
-          ui('qualification_completed', 'check');
-          showCompletion();
-        } else {
-          if (state.case_state) showCompletion();
-          else revealQuestion(next);
+        var newerChoice = pending.some(function (name) { return state[name] !== payload[name]; }) ||
+          pendingAnswers().some(function (name) { return pending.indexOf(name) === -1; });
+        if (newerChoice) { answerFailures = 0; flushAnswers(); return; }
+        answerFailures += 1;
+        setSyncStatus('פרטי ההתקשרות נשמרו, אך לא הצלחנו לאשר את שמירת התשובות. אפשר לנסות שוב או להמשיך ב־WhatsApp.', true);
+        if (answerFailures === 1 && (!result.code || isRetryable({ code: result.code }))) {
+          answerRetryTimer = window.setTimeout(function () {
+            answerRetryTimer = null;
+            flushAnswers();
+          }, RETRY_DELAY_MS);
         }
       });
+    }
+
+    function saveAnswer(name, value) {
+      state[name] = value;
+      saveState();
+      setQuestionStatus(name, '');
+      setQuestionRetry(name, false);
+      collapseQuestion(name, value);
+      var next = QUESTIONS[QUESTIONS.indexOf(name) + 1];
+      if (next && !state[next]) revealQuestion(next);
+      else showCompletion();
+      flushAnswers();
     }
 
     function collapseQuestion(name, value) {
@@ -700,9 +757,12 @@
 
     function showCompletion() {
       phase = 'done';
-      try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
+      saveState();
       form.hidden = true;
       showSuccessState();
+      if (!pendingAnswers().length) {
+        try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
+      }
     }
 
     function bindEvents() {
@@ -764,6 +824,13 @@
       });
 
       bindQuestions();
+      var syncRetry = document.querySelector('[data-sync-retry]');
+      if (syncRetry) syncRetry.addEventListener('click', function () {
+        if (answerRetryTimer) window.clearTimeout(answerRetryTimer);
+        answerRetryTimer = null;
+        answerFailures = 0;
+        flushAnswers();
+      });
 
       if (window.TAVIV_CONTACT && typeof window.TAVIV_CONTACT.whatsappUrl === 'function') {
         var waUrl = window.TAVIV_CONTACT.whatsappUrl();
@@ -959,6 +1026,8 @@
 
     fallback.hidden = true;
     app.hidden = false;
+    var escape = document.querySelector('[data-escape]');
+    if (escape) escape.hidden = false;
     measure('intake_view', {});
     measure('intake_step_view', { intake_step_id: 'contact' });
     if (state.lead_saved) restoreSavedLead();
