@@ -176,7 +176,7 @@
 }
 
 @media (max-width: 767px) {
-  .tv-hero { flex: 0 0 auto; width: 100%; max-width: 340px; align-self: center; }
+  .s1-hero__inner { flex-direction: column; align-items: stretch; gap: 28px; } .tv-hero { flex: 0 0 auto; width: 100%; max-width: 340px; align-self: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
