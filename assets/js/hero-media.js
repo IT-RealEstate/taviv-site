@@ -19,6 +19,7 @@
   }
 
   function start() {
+    if (video.querySelector('source')) { return; }
     addSource('assets/media/building-loop.webm', 'video/webm');
     addSource('assets/media/building-loop.mp4', 'video/mp4');
     video.preload = 'auto';
@@ -28,18 +29,9 @@
     if (played && played.catch) { played.catch(function () {}); }
   }
 
-  if ('IntersectionObserver' in window) {
-    var observer = new window.IntersectionObserver(function (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        if (entries[i].isIntersecting) {
-          observer.disconnect();
-          start();
-          return;
-        }
-      }
-    }, { rootMargin: '200px' });
-    observer.observe(link);
-  } else {
+  if (document.readyState === 'complete') {
     start();
+  } else {
+    window.addEventListener('load', start, { once: true });
   }
 }());
