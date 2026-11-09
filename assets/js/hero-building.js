@@ -137,7 +137,7 @@
     var played = video.play();
     if (played && played.catch) { played.catch(settle); }
     video.addEventListener('ended', settle);
-    window.setTimeout(settle, 13000);
+    window.setTimeout(settle, 8000);
   }
 
   if (document.readyState === 'complete') { start(); }
