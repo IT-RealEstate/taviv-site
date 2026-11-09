@@ -1,0 +1,185 @@
+/* Interactive hero building: the intro clip settles on the frontal frame, then
+   the apartments become labelled and clickable. */
+
+.tv-hero {
+  position: relative;
+  flex: 0 0 380px;
+  max-width: 380px;
+  aspect-ratio: 600 / 1066;
+  order: 1;
+}
+
+.tv-frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+  mask-image:
+    linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+.tv-frame video,
+.tv-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--bg-base, #080A0C);
+}
+
+/* the overlay shares the frame box but is never masked, so a label may sit
+   outside the building */
+.tv-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .6s ease;
+}
+
+.tv-hero.is-settled .tv-layer { opacity: 1; }
+
+.tv-zone {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  border-radius: 3px;
+  transition: box-shadow .2s, background-color .2s;
+}
+
+.tv-zone:hover,
+.tv-zone:focus-visible {
+  outline: 0;
+  background: rgba(236, 238, 239, .07);
+  box-shadow: inset 0 0 0 2px rgba(236, 238, 239, .85);
+}
+
+.tv-tag {
+  position: absolute;
+  pointer-events: none;
+  white-space: nowrap;
+  background: #ECEEEF;
+  color: #080A0C;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-family: var(--font-sans, inherit);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: .01em;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .55);
+  transition: transform .2s, opacity .2s;
+}
+
+.tv-zone:hover + .tv-tag,
+.tv-zone:focus-visible + .tv-tag { transform: scale(1.06); }
+
+.tv-dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: var(--accent, #1F8EB1);
+  pointer-events: none;
+  transition: opacity .2s;
+  animation: tv-ping 2.8s ease-out infinite;
+}
+
+@keyframes tv-ping {
+  0%   { box-shadow: 0 0 0 0 rgba(31, 142, 177, .5); }
+  70%  { box-shadow: 0 0 0 13px rgba(31, 142, 177, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(31, 142, 177, 0); }
+}
+
+/* the in-place explanation card */
+.tv-panel {
+  position: absolute;
+  inset-inline: 2%;
+  inset-block-end: 6%;
+  z-index: 3;
+  background: rgba(10, 13, 15, .95);
+  border: 1px solid rgba(236, 238, 239, .18);
+  border-radius: 10px;
+  padding: 16px 16px 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .6);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .25s, transform .25s;
+  pointer-events: none;
+}
+
+.tv-hero.is-open .tv-panel {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.tv-panel__tag {
+  display: inline-block;
+  background: #ECEEEF;
+  color: #080A0C;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-block-end: 10px;
+}
+
+.tv-panel__title {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary, #ECEEEF);
+}
+
+.tv-panel__body {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary, #A7AFB5);
+}
+
+.tv-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tv-panel__close {
+  border: 0;
+  background: none;
+  color: var(--text-secondary, #A7AFB5);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 2px;
+  text-decoration: underline;
+}
+
+.tv-hero.is-open .tv-layer .tv-tag,
+.tv-hero.is-open .tv-layer .tv-dot { opacity: 0; }
+
+@media (max-width: 1023px) {
+  .tv-hero { flex-basis: 330px; max-width: 330px; }
+  .tv-tag { font-size: 10px; padding: 2px 7px; }
+}
+
+@media (max-width: 767px) {
+  .tv-hero { flex: 0 0 auto; width: 100%; max-width: 340px; align-self: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-layer, .tv-panel { transition: none; }
+  .tv-dot { animation: none; }
+}
