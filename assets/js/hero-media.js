@@ -6,10 +6,9 @@
   var video = link.querySelector('.s1-hero__video');
   if (!video || !video.canPlayType) { return; }
 
-  var wideEnough = window.matchMedia('(min-width: 900px)').matches;
   var wantsStill = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var saveData = navigator.connection && navigator.connection.saveData;
-  if (!wideEnough || wantsStill || saveData) { return; }
+  if (wantsStill || saveData) { return; }
 
   function addSource(src, type) {
     var source = document.createElement('source');
