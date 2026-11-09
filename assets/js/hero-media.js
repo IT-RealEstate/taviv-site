@@ -18,20 +18,32 @@
     video.appendChild(source);
   }
 
+  var started = false;
   function start() {
-    if (video.querySelector('source')) { return; }
+    if (started) { return; }
+    started = true;
     addSource('assets/media/building-loop.webm', 'video/webm');
     addSource('assets/media/building-loop.mp4', 'video/mp4');
     video.preload = 'auto';
     video.autoplay = true;
+    video.muted = true;
     video.load();
     var played = video.play();
-    if (played && played.catch) { played.catch(function () {}); }
+    if (played && played.catch) {
+      played.catch(function () {
+        document.addEventListener('pointerdown', function once() {
+          document.removeEventListener('pointerdown', once);
+          var retry = video.play();
+          if (retry && retry.catch) { retry.catch(function () {}); }
+        });
+      });
+    }
   }
 
   if (document.readyState === 'complete') {
     start();
   } else {
     window.addEventListener('load', start, { once: true });
+    window.setTimeout(start, 2500);
   }
 }());
