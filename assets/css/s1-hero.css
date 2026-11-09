@@ -76,7 +76,7 @@
 .s1-hero__media {
   position: relative;
   display: block;
-  flex: 0 0 380px;
+  order: 1; flex: 0 0 380px;
   max-width: 380px;
   aspect-ratio: 9 / 16;
   overflow: hidden;
