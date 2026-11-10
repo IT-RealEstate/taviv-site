@@ -10,9 +10,12 @@
   var eventIdsSeen = {};
   var MAX_SEEN = 300;
 
-  // Microsoft Clarity stays off until a project id is set here AND the privacy policy says so.
+  // Microsoft Clarity: masking Strict and cookies off in the Clarity project settings.
+  // It loads only after the visitor agrees in the banner (privacy policy, section 16).
   // The id is public (it appears in the page anyway); it is not a key.
-  var CLARITY_PROJECT_ID = '';
+  var CLARITY_PROJECT_ID = 'zbeqvw0p4u';
+  var CONSENT_KEY = 'tv_measure_consent';
+  var CONSENT_VERSION = '2026-11-10.1';
 
   var FEATURE_FLAGS = {
     ga4: false,
@@ -259,7 +262,7 @@
 
   // the only place an event leaves the browser; nothing is sent while every flag is off
   function send(name, event) {
-    if (!FEATURE_FLAGS.clarity || TEST_MODE || typeof window.clarity !== 'function') return;
+    if (!FEATURE_FLAGS.clarity || TEST_MODE || !consented() || typeof window.clarity !== 'function') return;
     try {
       window.clarity('event', name);
       var tags = ['source_page', 'damage_case', 'case_stage', 'assistant_step', 'cta_location', 'device_category'];
@@ -269,8 +272,58 @@
     } catch (e) {}
   }
 
+  /* ---------- consent: nothing is measured before "מאשרים" ---------- */
+  function readConsent() {
+    try {
+      var v = JSON.parse(window.localStorage.getItem(CONSENT_KEY) || 'null');
+      return v && v.v === CONSENT_VERSION ? v.c : '';
+    } catch (e) { return ''; }
+  }
+  function writeConsent(choice) {
+    try { window.localStorage.setItem(CONSENT_KEY, JSON.stringify({ v: CONSENT_VERSION, c: choice })); } catch (e) {}
+  }
+  function consented() { return readConsent() === 'yes'; }
+
+  function consentBanner() {
+    if (!FEATURE_FLAGS.clarity || TEST_MODE || readConsent() || document.getElementById('tv-consent')) return;
+    var box = document.createElement('div');
+    box.id = 'tv-consent';
+    box.setAttribute('role', 'region');
+    box.setAttribute('aria-label', 'הסכמה למדידת שימוש');
+    box.setAttribute('dir', 'rtl');
+    box.style.cssText = 'position:fixed;inset-inline:0;bottom:0;z-index:2147483000;display:flex;justify-content:center;' +
+      'padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#1A2024;border-top:1px solid #1F8EB1;' +
+      'box-shadow:0 -6px 24px rgba(0,0,0,.45);font-family:inherit;color:#ECEEEF;';
+    var btn = 'min-height:44px;padding:0 18px;border-radius:22px;font:inherit;font-size:15px;font-weight:600;cursor:pointer;';
+    box.innerHTML = '<div style="width:100%;max-width:520px;display:grid;gap:10px">' +
+      '<p style="margin:0;font-size:14.5px;line-height:1.45">אפשר לראות איך משתמשים באתר, כדי לשפר אותו? ' +
+      'בלי טקסט שהקלדתם ובלי עוגיות. <a href="/legal/#s16" style="color:#ECEEEF;text-decoration:underline">פרטים</a></p>' +
+      '<div style="display:flex;gap:10px">' +
+      '<button type="button" data-consent="yes" style="' + btn + 'flex:1;border:0;background:#1F8EB1;color:#080A0C">מאשרים</button>' +
+      '<button type="button" data-consent="no" style="' + btn + 'flex:1;border:1px solid #A7AFB5;background:none;color:#ECEEEF">לא תודה</button>' +
+      '</div></div>';
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-consent]');
+      if (!b) return;
+      var choice = b.getAttribute('data-consent');
+      writeConsent(choice);
+      box.parentNode.removeChild(box);
+      if (choice === 'yes') loadClarity();
+    });
+    document.body.appendChild(box);
+  }
+  function bindConsentReset() {
+    var nodes = document.querySelectorAll('[data-consent-reset]');
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].addEventListener('click', function () {
+        try { window.localStorage.removeItem(CONSENT_KEY); } catch (e) {}
+        consentBanner();
+      });
+    }
+  }
+
   function loadClarity() {
-    if (!FEATURE_FLAGS.clarity || TEST_MODE) return;
+    if (!FEATURE_FLAGS.clarity || TEST_MODE || !consented() || typeof window.clarity === 'function') return;
     (function (c, l, a, r, i, t, y) {
       c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
       t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i;
@@ -414,6 +467,8 @@
   }
 
   loadClarity();
+  if (document.body) { consentBanner(); bindConsentReset(); }
+  else { document.addEventListener('DOMContentLoaded', function () { consentBanner(); bindConsentReset(); }); }
   var page = currentPage();
   if (page === 'home' || page === 'damage' || page === 'check' || page === 'assistant' || page === 'not_found') {
     trackEvent('page_view', {});

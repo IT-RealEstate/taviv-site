@@ -13,7 +13,7 @@
   var DEMO = !!PATHS.demo;
   var cfg = window.INTAKE_CONFIG || {};
   var WA_NUMBER = cfg.whatsappNumber || '972552617625';
-  var LEGAL_RELEASE = '2026-09-04.1';          // same notice the /check/ form shows
+  var LEGAL_RELEASE = '2026-11-10.1';          // same notice the /check/ form shows
   var STORE_KEY = 'tv_asst';
   var icon = window.TAVIV_ICON || function () { return ''; };
   var logo = window.TAVIV_LOGO || function () { return ''; };

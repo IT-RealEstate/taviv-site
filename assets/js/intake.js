@@ -55,7 +55,7 @@
     var STORAGE_KEY = 'intake_draft_v2';
     var LEAD_ID_PATTERN = /^LD-[0-9a-f]{64}$/;
 
-    var LEGAL_RELEASE = '2026-09-04.1';
+    var LEGAL_RELEASE = '2026-11-10.1';
 
     var SUBMIT_TIMEOUT_MS = 15000;
     var RETRY_DELAY_MS = 2000;
