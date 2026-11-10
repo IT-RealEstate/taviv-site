@@ -1,12 +1,72 @@
-/* Interactive hero building: the intro clip settles on the frontal frame, then
-   the apartments become labelled and clickable. */
+/* Hero building, mobile first.
+   Phone: headline, one question, then the building, tappable at once.
+   The frame is 600x1066; only rows 200-900 are shown so the building sits above the fold. */
 
+:root {
+  --fam-water: #3DB2D6;
+  --fam-fire: #F08A3C;
+  --fam-structure: #E2B94B;
+  --fam-burglary: #B79AE8;
+  --fam-commercial: #63C7A0;
+  --fam-unsure: #A7AFB5;
+}
+
+.ti { display: block; flex: none; }
+
+/* ---------- hero layout ---------- */
+.s1-hero { padding-block: 18px 44px; }
+
+.s1-hero__inner--v2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "head" "media" "more";
+  row-gap: 10px;
+  align-items: start;
+}
+
+.s1-hero__head { grid-area: head; min-width: 0; }
+.s1-hero__more { grid-area: more; min-width: 0; }
+
+.s1-hero__inner--v2 .s1-hero__title { font-size: 34px; line-height: 1.12; }
+.s1-hero__inner--v2 .s1-hero__title .line + .line {
+  margin-block-start: 4px;
+  font-size: 21px;
+  line-height: 1.3;
+  color: var(--text-secondary);
+}
+
+.s1-hero__ask {
+  margin-block-start: 14px;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+.s1-hero__ask strong { font-weight: 500; color: var(--text-primary); }
+
+.s1-hero__more .s1-hero__lede { margin-block-start: 6px; font-size: 17px; line-height: 1.5; color: var(--text-secondary); }
+.s1-hero__more .s1-hero__optional { display: none; }
+.s1-hero__more .btn { margin-block-start: 20px; width: 100%; }
+
+/* ---------- the building ---------- */
 .tv-hero {
+  grid-area: media;
   position: relative;
-  flex: 0 0 380px;
-  max-width: 380px;
-  aspect-ratio: 600 / 1066;
-  order: 1;
+  margin-inline: calc(var(--gutter) * -1);
+  min-width: 0;
+}
+
+.tv-crop {
+  position: relative;
+  aspect-ratio: 600 / 700;
+  clip-path: inset(0 -24px);
+}
+
+.tv-stage {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: -28.571%;
+  height: 152.286%;
 }
 
 .tv-frame {
@@ -14,17 +74,16 @@
   inset: 0;
   overflow: hidden;
   -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%),
-    linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+    linear-gradient(to bottom, transparent 18.800%, #000 24%, #000 79.500%, transparent 84.400%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
   mask-image:
-    linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%),
-    linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+    linear-gradient(to bottom, transparent 18.800%, #000 24%, #000 79.500%, transparent 84.400%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
 }
 
-.tv-frame video,
-.tv-frame img {
+.tv-frame video {
   display: block;
   width: 100%;
   height: 100%;
@@ -32,17 +91,14 @@
   background: var(--bg-base, #080A0C);
 }
 
-/* the overlay shares the frame box but is never masked, so a label may sit
-   outside the building */
 .tv-layer {
   position: absolute;
   inset: 0;
-  pointer-events: none;
   opacity: 0;
-  transition: opacity .6s ease;
+  transition: opacity .45s ease;
+  pointer-events: none;
 }
-
-.tv-hero.is-settled .tv-layer { opacity: 1; }
+.tv-hero.is-settled .tv-layer { opacity: 1; pointer-events: auto; }
 
 .tv-zone {
   position: absolute;
@@ -51,135 +107,214 @@
   border: 0;
   background: transparent;
   cursor: pointer;
-  pointer-events: auto;
   border-radius: 3px;
+  -webkit-tap-highlight-color: transparent;
   transition: box-shadow .2s, background-color .2s;
 }
-
 .tv-zone:hover,
-.tv-zone:focus-visible {
+.tv-zone:focus-visible,
+.tv-zone.is-active {
   outline: 0;
-  background: rgba(236, 238, 239, .07);
-  box-shadow: inset 0 0 0 2px rgba(236, 238, 239, .85);
+  background: color-mix(in srgb, var(--fam, #ECEEEF) 12%, transparent);
+  box-shadow: inset 0 0 0 2px var(--fam, #ECEEEF);
 }
 
 .tv-tag {
   position: absolute;
-  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  border: 0;
   white-space: nowrap;
   background: #ECEEEF;
   color: #080A0C;
   border-radius: 999px;
-  padding: 3px 9px;
+  padding: 3px 8px 3px 7px;
   font-family: var(--font-sans, inherit);
-  font-size: 11px;
+  font-size: 10.500px;
   font-weight: 600;
   line-height: 1.25;
-  letter-spacing: .01em;
+  cursor: pointer;
   box-shadow: 0 2px 10px rgba(0, 0, 0, .55);
-  transition: transform .2s, opacity .2s;
+  -webkit-tap-highlight-color: transparent;
 }
-
-.tv-zone:hover + .tv-tag,
-.tv-zone:focus-visible + .tv-tag { transform: scale(1.06); }
+/* a 44px touch target around the small pill */
+.tv-tag::after { content: ""; position: absolute; inset: -11px -4px; }
+.tv-tag::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fam, #A7AFB5);
+  flex: none;
+}
+.tv-tag:focus-visible { outline: 2px solid var(--fam, #ECEEEF); outline-offset: 2px; }
 
 .tv-dot {
   position: absolute;
-  width: 7px;
-  height: 7px;
-  margin: -3.5px 0 0 -3.5px;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
   border-radius: 50%;
-  background: var(--accent, #1F8EB1);
+  background: var(--fam, #3DB2D6);
+  color: var(--fam, #3DB2D6);
   pointer-events: none;
-  transition: opacity .2s;
-  animation: tv-ping 2.8s ease-out infinite;
+  animation: tv-ping 2.800s ease-out infinite;
 }
-
 @keyframes tv-ping {
-  0%   { box-shadow: 0 0 0 0 rgba(31, 142, 177, .5); }
-  70%  { box-shadow: 0 0 0 13px rgba(31, 142, 177, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(31, 142, 177, 0); }
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); }
+  70%  { box-shadow: 0 0 0 12px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
 }
 
-/* the in-place explanation card */
-.tv-panel {
-  position: absolute;
-  inset-inline: 2%;
-  inset-block-end: 6%;
-  z-index: 3;
-  background: rgba(10, 13, 15, .95);
-  border: 1px solid rgba(236, 238, 239, .18);
-  border-radius: 10px;
-  padding: 16px 16px 14px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, .6);
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity .25s, transform .25s;
+/* ---------- "choose in the building" ---------- */
+.tv-hero, .s1-hero__ask { scroll-margin-top: 100px; }
+.s1-hero__ask { border-radius: 10px; transition: background-color .3s, color .3s, box-shadow .3s; }
+.is-calling .s1-hero__ask {
+  background: color-mix(in srgb, var(--brand-wordmark-accent, #1F8EB1) 22%, transparent);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--brand-wordmark-accent, #1F8EB1) 22%, transparent);
+  color: var(--text-primary);
+}
+.is-calling .tv-tag { animation: tv-call 1.4s ease-in-out 3; }
+@keyframes tv-call {
+  0%, 100% { transform: scale(1); box-shadow: 0 2px 10px rgba(0, 0, 0, .55); }
+  50% { transform: scale(1.1); box-shadow: 0 0 0 4px color-mix(in srgb, var(--fam) 55%, transparent); }
+}
+.state-card.is-picked { border-color: var(--brand-wordmark-accent); background: var(--bg-graphite); }
+
+/* ---------- the bubble: a bottom sheet on phones ---------- */
+.tv-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  visibility: hidden;
   pointer-events: none;
 }
+.tv-sheet.is-open { visibility: visible; pointer-events: auto; }
 
-.tv-hero.is-open .tv-panel {
-  opacity: 1;
-  transform: none;
-  pointer-events: auto;
+.tv-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(4, 6, 8, .55);
+  opacity: 0;
+  transition: opacity .25s;
+  cursor: default;
 }
+.tv-sheet.is-open .tv-sheet__backdrop { opacity: 1; }
 
-.tv-panel__tag {
-  display: inline-block;
-  background: #ECEEEF;
-  color: #080A0C;
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  margin-block-end: 10px;
+.tv-sheet__card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  background: #12171B;
+  border-block-start: 3px solid var(--fam, #3DB2D6);
+  border-radius: 18px 18px 0 0;
+  padding: 14px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -18px 50px rgba(0, 0, 0, .6);
+  transform: translateY(102%);
+  transition: transform .28s cubic-bezier(.2, .8, .2, 1);
 }
+.tv-sheet.is-open .tv-sheet__card { transform: none; }
 
-.tv-panel__title {
-  margin: 0 0 6px;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary, #ECEEEF);
-}
-
-.tv-panel__body {
-  margin: 0 0 14px;
-  font-size: 13.5px;
-  line-height: 1.55;
+.tv-sheet__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-inline-start: -10px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
   color: var(--text-secondary, #A7AFB5);
+  cursor: pointer;
 }
+.tv-sheet__close:hover,
+.tv-sheet__close:focus-visible { color: var(--text-primary, #ECEEEF); background: rgba(236, 238, 239, .08); outline: 0; }
 
-.tv-panel__actions {
+.tv-sheet__name {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--fam, #3DB2D6);
+}
+.tv-sheet__name .ti { width: 26px; height: 26px; }
+
+.tv-sheet__hook {
+  margin: 10px 0 0;
+  font-family: var(--font-sans, inherit);
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1.22;
+  color: var(--text-primary, #ECEEEF);
+  text-wrap: balance;
 }
 
-.tv-panel__close {
-  border: 0;
-  background: none;
+.tv-sheet__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-block-start: 18px;
+  min-height: 54px;
+  border-radius: 27px;
+  background: var(--text-primary, #ECEEEF);
+  color: var(--bg-base, #080A0C);
+  font-size: 18px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.tv-sheet__cta .ti { width: 20px; height: 20px; }
+
+.tv-sheet__note {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 13.500px;
   color: var(--text-secondary, #A7AFB5);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 6px 2px;
-  text-decoration: underline;
 }
 
-.tv-hero.is-open .tv-layer .tv-tag,
-.tv-hero.is-open .tv-layer .tv-dot { opacity: 0; }
-
-@media (max-width: 1023px) {
-  .tv-hero { flex-basis: 330px; max-width: 330px; }
-  .tv-tag { font-size: 10px; padding: 2px 7px; }
+/* ---------- wider screens ---------- */
+@media (min-width: 768px) {
+  .s1-hero { padding-block: 64px 80px; }
+  .s1-hero__inner--v2 {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-areas: "head media" "more media";
+    column-gap: 48px;
+    row-gap: 0;
+    align-items: center;
+  }
+  .s1-hero__head { align-self: end; }
+  .s1-hero__more { align-self: start; }
+  .s1-hero__inner--v2 .s1-hero__title { font-size: var(--size-hero-h1); line-height: var(--lh-hero-h1); }
+  .s1-hero__inner--v2 .s1-hero__title .line + .line { margin: 0; font-size: inherit; line-height: inherit; color: inherit; }
+  .s1-hero__ask { margin-block-start: 22px; font-size: 19px; }
+  .s1-hero__more .s1-hero__lede { margin-block-start: 18px; font-size: var(--size-lede); line-height: var(--lh-lede); color: var(--text-primary); }
+  .s1-hero__more .s1-hero__optional { display: block; }
+  .s1-hero__more .btn { width: auto; margin-block-start: 28px; }
+  .tv-hero { margin-inline: 0; }
+  .tv-tag { font-size: 11px; }
+  .tv-sheet { align-items: center; }
+  .tv-sheet__card { border-radius: 16px; padding-block-end: 22px; transform: translateY(16px); opacity: 0; transition: transform .25s, opacity .25s; }
+  .tv-sheet.is-open .tv-sheet__card { opacity: 1; }
 }
 
-@media (max-width: 767px) {
-  .s1-hero__inner { flex-direction: column; align-items: stretch; gap: 28px; } .tv-hero { flex: 0 0 auto; width: 100%; max-width: 340px; align-self: center; }
+@media (min-width: 768px) and (max-width: 1023px) {
+  .s1-hero__inner--v2 { grid-template-columns: minmax(0, 1fr) 320px; column-gap: 32px; }
 }
+
+@media (min-width: 768px) { .tv-hero, .s1-hero__ask { scroll-margin-top: 140px; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .tv-layer, .tv-panel { transition: none; }
+  .is-calling .tv-tag { animation: none; }
+  .tv-layer, .tv-sheet__card, .tv-sheet__backdrop { transition: none; }
   .tv-dot { animation: none; }
 }
