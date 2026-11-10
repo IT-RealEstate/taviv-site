@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>מחירים ותנאי התקשרות | טביב שמאות</title>
-  <meta name="description" content="שכר הטרחה נקבע מראש לפי היקף העבודה, לא כאחוז מהפיצוי. בדיקת התאמה ראשונית ללא עלות.">
+  <meta name="description" content="לבדוק אם ההצעה של חברת הביטוח הוגנת. בדיקה בעוזר של טביב, ללא עלות. חוות דעת: 899 עד 1,499 ₪, ועוד מע״מ. טיפול מלא: חלק מהסכום שנגבה, בסוף.">
   <link rel="canonical" href="https://taviv.co.il/pricing/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="he_IL">
   <meta property="og:site_name" content="טביב שמאות">
-  <meta property="og:title" content="תיקנתם את הנזילות? הנזק לא בהכרח תועד — שמאי רכוש">
-  <meta property="og:description" content="עצירת הנזילות ותיקון המקור הם שלב אחד. בדיקת ההיקף המלא של הנזק היא שלב נפרד.">
-  <meta property="og:url" content="https://taviv.co.il/damage/">
+  <meta property="og:title" content="מחירים ותנאי התקשרות | טביב שמאות">
+  <meta property="og:description" content="לבדוק אם ההצעה של חברת הביטוח הוגנת. בדיקה בעוזר של טביב, ללא עלות. חוות דעת: 899 עד 1,499 ₪, ועוד מע״מ. טיפול מלא: חלק מהסכום שנגבה, בסוף.">
+  <meta property="og:url" content="https://taviv.co.il/pricing/">
   
   <meta name="twitter:card" content="summary">
 
@@ -33,27 +33,105 @@
   <link rel="stylesheet" href="../assets/css/damage.css">
   <link rel="stylesheet" href="../assets/css/footer.css">
 
-  
-  <noscript>
-    <style>
-      
-      [data-route][hidden],
-      [data-feas][hidden],
-      .svc__body[hidden] { display: block !important; }
-      [data-router-q],
-      [data-router-answered],
-      [data-router-intro],
-      .rt__open,
-      .rt__more,
-      .svc__chev { display: none; }
-      
-      .rt__route + .rt__route {
-        margin-block-start: 40px;
-        padding-block-start: 32px;
-        border-block-start: 1px solid var(--hairline-dark);
+  <style>
+    /* Lean /pricing/ layout only. Shared damage.css stays as on main. */
+    .dmg-pricing {
+      padding-block: 88px 120px;
+    }
+    .dmg-pricing__title {
+      max-width: 12em;
+      margin: 0;
+    }
+    .dmg-pricing__items {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 64px 48px;
+      margin-block-start: 80px;
+      max-width: 1080px;
+    }
+    .dmg-pricing__item-title {
+      font-size: 20px;
+      line-height: 1.35;
+      max-width: none;
+      font-weight: 500;
+    }
+    .dmg-pricing__item .dmg-pricing__price {
+      margin-block-start: 14px;
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1.4;
+      color: var(--text-secondary);
+    }
+    .dmg-pricing__item--free .dmg-pricing__price {
+      color: var(--accent);
+    }
+    .dmg-pricing__cta {
+      margin-block-start: 80px;
+      text-align: center;
+    }
+    @media (max-width: 767px) {
+      .dmg-pricing {
+        padding-block: 56px 88px;
       }
-    </style>
-  </noscript>
+      .dmg-pricing__items {
+        grid-template-columns: 1fr;
+        gap: 48px;
+        margin-block-start: 56px;
+      }
+      .dmg-pricing__cta {
+        margin-block-start: 56px;
+      }
+      .dmg-pricing__price {
+        font-size: 18px;
+      }
+    }
+  </style>
+
+
+
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": "טביב שמאות",
+    "url": "https://taviv.co.il/pricing/",
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "מסלולי שירות",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "name": "בדיקת התאמה בעוזר של טביב",
+          "description": "בדיקה בעוזר של טביב, כדי להבין איפה אתם עומדים. ללא עלות.",
+          "url": "https://taviv.co.il/assistant/",
+          "price": "0",
+          "priceCurrency": "ILS"
+        },
+        {
+          "@type": "Offer",
+          "name": "חוות דעת",
+          "description": "חוות דעת מול חברת הביטוח. 899 עד 1,499 ₪, ועוד מע״מ.",
+          "url": "https://taviv.co.il/pricing/",
+          "priceCurrency": "ILS",
+          "priceSpecification": {
+            "@type": "PriceSpecification",
+            "minPrice": 899,
+            "maxPrice": 1499,
+            "priceCurrency": "ILS",
+            "valueAddedTaxIncluded": false
+          }
+        },
+        {
+          "@type": "Offer",
+          "name": "טיפול מלא בתיק",
+          "description": "טיפול מלא בתיק מול חברת הביטוח. חלק מהסכום שנגבה, בסוף.",
+          "url": "https://taviv.co.il/pricing/"
+        }
+      ]
+    }
+  }
+  </script>
 </head>
 <body class="page-damage">
   <a class="skip" href="#main">דילוג לתוכן</a>
@@ -103,340 +181,32 @@
   </header>
 
   <main id="main">
-    <section class="section section--page-head">
-      <div class="wrap"><h1 class="page-title">מחירים ותנאי התקשרות</h1></div>
-    </section>
-<section id="pricing" data-measure-section="damage_pricing" class="section dmg-pricing" aria-labelledby="dmg-pricing-title">
+    <section id="pricing" data-measure-section="damage_pricing" class="section dmg-pricing" aria-labelledby="dmg-pricing-title">
       <div class="wrap">
-        <h2 id="dmg-pricing-title" class="dmg-pricing__title" data-reveal>המחיר ידוע מראש — לא אחוז מהפיצוי</h2>
+        <h1 id="dmg-pricing-title" class="dmg-pricing__title" data-reveal>לדעת אם ההצעה הוגנת</h1>
 
-        <p class="dmg-pricing__lede">שכר הטרחה נקבע מראש לפי היקף העבודה, ולא לפי גובה הנזק או הפיצוי. כך העלות אינה גדלה אוטומטית רק מפני שסכום הנזק גבוה יותר.</p>
-        <p class="dmg-pricing__lede">לא כל מקרה דורש את המסלול המלא. מתחילים בבדיקת התאמה ללא עלות, ומתקדמים רק לפי מה שהמקרה דורש.</p>
+        <div class="dmg-pricing__items" data-reveal>
+          <article class="dmg-pricing__item dmg-pricing__item--free">
+            <h2 class="dmg-pricing__item-title">להבין איפה אתם עומדים</h2>
+            <p class="dmg-pricing__price">בדיקה בעוזר, ללא עלות</p>
+          </article>
 
-        
-        <div class="dmg-pricing__gate" data-reveal>
-          <h3 class="dmg-pricing__gate-title">בדיקת התאמה ראשונית ללא עלות</h3>
-          <p class="dmg-pricing__gate-body">נמפה מה כבר ידוע במקרה, מה עדיין חסר ומהו המסלול המתאים להמשך.</p>
-          
-          <a class="btn" data-cta-location="pricing" data-measure-cta="damage_pricing_entry" href="/check/">בדיקת התאמה ראשונית</a>
+          <article class="dmg-pricing__item">
+            <h2 class="dmg-pricing__item-title">חוות דעת מול חברת הביטוח</h2>
+            <p class="dmg-pricing__price" dir="rtl"><span dir="ltr">899</span> עד <span dir="ltr">1,499</span> ₪, ועוד מע״מ</p>
+          </article>
+
+          <article class="dmg-pricing__item">
+            <h2 class="dmg-pricing__item-title">טיפול מלא בתיק בשבילכם</h2>
+            <p class="dmg-pricing__price">חלק מהסכום שנגבה, בסוף</p>
+          </article>
         </div>
 
-        
-
-        
-        <div class="rt" data-router data-reveal>
-          <h3 class="rt__title">מה מתאים למצב שלכם?</h3>
-          <p class="rt__lede" data-router-intro>לא צריך לבחור שירות מראש. ענו על שתי שאלות קצרות ונציג את המסלול שמתאים למצב שתיארתם.</p>
-          <p class="rt__disclaimer" data-router-intro>הבחירה כאן אינה הזמנה ואינה יוצרת התחייבות.</p>
-
-          <noscript>
-            <p class="rt__lede">להלן המסלולים לפי מצב, עם המחירים. בשיחה נבדוק מה מתאים למקרה שלכם.</p>
-          </noscript>
-
-          
-          <fieldset class="rt__q" data-router-q="q1">
-            <legend class="rt__q-title">כבר קיבלתם שומה או הצעת פיצוי?</legend>
-            <div class="rt__options">
-              <label class="rt__opt">
-                <input class="rt__radio" type="radio" name="rt-q1" value="yes" data-router-input>
-                <span class="rt__opt-in">
-                  <span class="rt__opt-mark" aria-hidden="true"></span>
-                  <span class="rt__opt-text">
-                    <span class="rt__opt-label">כן, כבר קיבלתי</span>
-                    <span class="rt__opt-sub">יש מסמך או סכום שאפשר לבדוק מול הנזק והחומר הקיים.</span>
-                  </span>
-                </span>
-              </label>
-              <label class="rt__opt">
-                <input class="rt__radio" type="radio" name="rt-q1" value="no" data-router-input>
-                <span class="rt__opt-in">
-                  <span class="rt__opt-mark" aria-hidden="true"></span>
-                  <span class="rt__opt-text">
-                    <span class="rt__opt-label">לא, עדיין לא</span>
-                    <span class="rt__opt-sub">עדיין אין שומה או הצעת פיצוי שאפשר להשוות אליהן.</span>
-                  </span>
-                </span>
-              </label>
-            </div>
-          </fieldset>
-
-          <fieldset class="rt__q" data-router-q="q2" hidden>
-            <legend class="rt__q-title">מה תרצו לקבל מאיתנו?</legend>
-            <div class="rt__options rt__options--three">
-              <label class="rt__opt">
-                <input class="rt__radio" type="radio" name="rt-q2" value="appraisal_only" data-router-input>
-                <span class="rt__opt-in">
-                  <span class="rt__opt-mark" aria-hidden="true"></span>
-                  <span class="rt__opt-text">
-                    <span class="rt__opt-label">מסמך מקצועי — ומכאן אמשיך בעצמי</span>
-                    <span class="rt__opt-sub">בדיקה, כימות וחוות דעת מקצועית שתוכלו להמשיך ממנה בעצמכם.</span>
-                  </span>
-                </span>
-              </label>
-              <label class="rt__opt">
-                <input class="rt__radio" type="radio" name="rt-q2" value="appraisal_managed" data-router-input>
-                <span class="rt__opt-in">
-                  <span class="rt__opt-mark" aria-hidden="true"></span>
-                  <span class="rt__opt-text">
-                    <span class="rt__opt-label">מסמך מקצועי וניהול של התיק</span>
-                    <span class="rt__opt-sub">חוות דעת וגם ניהול של החלק המקצועי בהתנהלות מול חברת הביטוח.</span>
-                  </span>
-                </span>
-              </label>
-              <label class="rt__opt">
-                <input class="rt__radio" type="radio" name="rt-q2" value="unsure" data-router-input>
-                <span class="rt__opt-in">
-                  <span class="rt__opt-mark" aria-hidden="true"></span>
-                  <span class="rt__opt-text">
-                    <span class="rt__opt-label">עדיין לא ברור לי מה נדרש</span>
-                    <span class="rt__opt-sub">נתחיל בבדיקת התאמה ללא עלות ונבין מה חסר לפני שמחליטים.</span>
-                  </span>
-                </span>
-              </label>
-            </div>
-          </fieldset>
-
-          
-          <div class="rt__answered" data-router-answered hidden>
-            <p class="rt__answered-text"><span class="rt__answered-label">התשובות שלכם:</span> <span data-router-summary></span></p>
-            <button type="button" class="rt__reset" data-router-reset>שינוי תשובה</button>
-          </div>
-
-          <div class="rt__route" data-route="insurer_gap" hidden>
-            <h4 class="rt__head">כבר יש שומה או הצעה? בודקים אם התמונה המקצועית מלאה</h4>
-
-            <article class="rt__svc" data-service="insurer_gap">
-              <p class="rt__name">בדיקת פער לאחר שומת מבטחת</p>
-
-              <p class="rt__label">מתאים לכם אם</p>
-              <p class="rt__text">כבר קיבלתם שומה או הצעת פיצוי, ואתם רוצים להבין אם רכיבי הנזק, הכמויות וצורכי השיקום קיבלו מענה מספק ביחס לחומר הקיים.</p>
-
-              <p class="rt__label">מה מקבלים</p>
-              <p class="rt__text">בדיקה ממוקדת של השומה או ההצעה מול ממצאי הנזק, ומסקנה מה קיבל מענה, מה דורש הבהרה והאם קיימת הצדקה מקצועית להמשך.</p>
-
-              <p class="rt__note">זו אינה חוות דעת שמאית מלאה.</p>
-
-              <button type="button" class="rt__open" data-svc-toggle
-                      aria-expanded="false" aria-controls="svc-insurer_gap-body">
-                <span class="rt__open-label">מה כולל</span>
-                <span class="svc__chev" aria-hidden="true"></span>
-              </button>
-
-              <div class="svc__body" id="svc-insurer_gap-body" data-svc-body hidden>
-                <p class="svc__label">למה נדרשת כאן עבודה מקצועית?</p>
-                <p class="svc__why">בדיקת שומה אינה מסתכמת בהשוואת הסכום הסופי. צריך לבחון אם הממצאים, רכיבי הנזק, שיטות השיקום, הכמויות והעלויות מתארים יחד תמונה עקבית. מסמך יכול להיראות מפורט ועדיין להשאיר שאלות מקצועיות שהחומר הקיים מעלה.</p>
-                <p class="svc__label">מה נבדק?</p>
-                <ul class="svc__list">
-                  <li>התאמה בין הממצאים והמסמכים לבין הרכיבים שקיבלו ביטוי בשומה או בהצעה.</li>
-                  <li>הכמויות, שיטות העבודה ובסיסי העלות שניתן לבחון מתוך החומר.</li>
-                  <li>רכיבי נזק וצורכי שיקום נוספים שהחומר עשוי להצדיק את בדיקתם.</li>
-                  <li>פערים, אי־בהירויות והמשמעות המקצועית שלהם להמשך הטיפול.</li>
-                </ul>
-                <p class="svc__label">מה תקבלו?</p>
-                <ul class="svc__list">
-                  <li>מיפוי ברור של הנושאים שקיבלו מענה ושל אלה שדורשים בירור נוסף.</li>
-                  <li>הסבר מקצועי לפערים המהותיים שנמצאו, אם נמצאו.</li>
-                  <li>מסקנה קצרה אם קיימת הצדקה מקצועית להמשך פעולה.</li>
-                  <li>פירוט המידע או המסמכים שכדאי להשלים, ככל שנדרש.</li>
-                </ul>
-                <p class="svc__label">מה אפשר לעשות לאחר הבדיקה?</p>
-                <p class="svc__next">על בסיס המסקנה תוכלו להחליט אם להסתפק במענה הקיים, לבקש הבהרות, להמתין או לבחון חוות דעת שמאית מלאה. אם יידרש ביסוס רחב יותר או ליווי מתמשך, ניתן יהיה לבחון את מסלול ההמשך המתאים.</p>
-
-                <p class="svc__value">המחיר משקף בחינה מקצועית של המסמך הקיים מול חומר הנזק ומסקנה ממוקדת לגבי ההמשך — לפני שנכנסים לעבודה רחבה יותר.</p>
-
-                <div class="svc__price-box" id="svc-insurer_gap-price" data-svc-price>
-                  <p class="svc__price"><bdi dir="rtl">1,500 ₪</bdi></p>
-                  <p class="svc__credit">במקרה של המשך טיפול באותו אירוע, העבודה שכבר בוצעה תובא בחשבון בהצעה להמשך.</p>
-                  <a class="svc__cta" href="/check/" data-cta-location="pricing" data-measure-cta="damage_insurer_gap_check"
-                     data-service-interest="insurer_gap">לבדוק התאמה למסלול הזה — ללא עלות</a>
-                  <p class="svc__cta-note">בדיקת ההתאמה הראשונית ללא עלות וללא התחייבות.</p>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <div class="rt__route" data-route="appraisal_only" hidden>
-            <h4 class="rt__head">חוות דעת שמאית — בסיס מקצועי להמשך שתנהלו בעצמכם</h4>
-
-            <article class="rt__svc" data-service="appraisal_only">
-              <p class="rt__name">חוות דעת שמאית</p>
-
-              <p class="rt__label">מתאים לכם אם</p>
-              <p class="rt__text">אתם צריכים בדיקה, כימות וחוות דעת מקצועית שתבסס את תמונת הנזק, ומתכוונים לנהל בעצמכם את המשך ההתנהלות לאחר קבלתה.</p>
-
-              <p class="rt__label">מה מקבלים</p>
-              <p class="rt__text">חוות דעת שמרכזת את הממצאים, רכיבי הנזק, צורכי השיקום והאומדן המקצועי.</p>
-
-              <button type="button" class="rt__open" data-svc-toggle
-                      aria-expanded="false" aria-controls="svc-appraisal_only-body">
-                <span class="rt__open-label">מה כולל</span>
-                <span class="svc__chev" aria-hidden="true"></span>
-              </button>
-
-              <div class="svc__body" id="svc-appraisal_only-body" data-svc-body hidden>
-                <p class="svc__label">למה נדרשת כאן עבודה מקצועית?</p>
-                <p class="svc__why">נזק לרכוש אינו מסתכם במה שרואים בתמונות או בסכום שמופיע בהצעת מחיר אחת. כדי להעריך אותו צריך לחבר בין נסיבות האירוע, הממצאים, הנזק הישיר והתוצאתי, עבודות השיקום, הכמויות והעלויות. כל חלק יכול להיראות סביר בפני עצמו — ועדיין התמונה הכוללת עלולה להיות חסרה.</p>
-                <p class="svc__label">מה נבדק?</p>
-                <ul class="svc__list">
-                  <li>הקשר בין הממצאים, התמונות, הדוחות והמסמכים הקיימים.</li>
-                  <li>רכיבי הנזק וצורכי השיקום שעולים מהחומר שניתן לבדוק.</li>
-                  <li>שיטות העבודה, הכמויות ובסיסי העלות הרלוונטיים לאומדן.</li>
-                  <li>המסקנות וההסתייגויות הנדרשות כדי להציג תמונה מקצועית מבוססת.</li>
-                </ul>
-                <p class="svc__label">מה תקבלו?</p>
-                <ul class="svc__list">
-                  <li>בחינת הממצאים והמסמכים הקיימים.</li>
-                  <li>הגדרת רכיבי הנזק וצורכי השיקום.</li>
-                  <li>כימות כמויות ועלויות בהתאם לחומר שניתן לבדוק.</li>
-                  <li>חוות דעת שמרכזת את התמונה המקצועית והמסקנות.</li>
-                </ul>
-                <p class="svc__label">איך אפשר להמשיך?</p>
-                <p class="svc__next">לאחר קבלת חוות הדעת תוכלו להמשיך את ההתנהלות בעצמכם. אם בהמשך תעדיפו ליווי מקצועי גם בהתנהלות מול חברת הביטוח, ניתן יהיה לבחון את המשך הטיפול במסגרת מסלול ניהול התיק, בהתאם למצב התיק ולהיקף הנדרש.</p>
-
-                <p class="svc__value">המחיר משקף את עבודת הבדיקה, הכימות וגיבוש המסקנות המקצועיות — ולא רק את הפקת המסמך הסופי. הוא נקבע מראש, לאחר בדיקת התאמה ראשונית ללא עלות.</p>
-
-                <div class="svc__price-box" id="svc-appraisal_only-price" data-svc-price>
-                  <p class="svc__price"><bdi dir="rtl">1,500 ₪</bdi></p>
-                  <p class="svc__caveat">המחיר מתייחס לחוות דעת ממוקדת בתיק סטנדרטי. היקף חריג יתומחר מראש בהצעה נפרדת.</p>
-                  <a class="svc__cta" href="/check/" data-cta-location="pricing" data-measure-cta="damage_appraisal_only_check"
-                     data-service-interest="appraisal_only">לבדוק התאמה למסלול הזה — ללא עלות</a>
-                  <p class="svc__cta-note">בדיקת ההתאמה הראשונית ללא עלות וללא התחייבות.</p>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <div class="rt__route" data-route="appraisal_managed" hidden>
-            <h4 class="rt__head">חוות דעת שמאית וליווי מקצועי לאורך התיק</h4>
-
-            <article class="rt__svc" data-service="appraisal_managed">
-              <p class="rt__name">חוות דעת וניהול תיק סטנדרטי</p>
-
-              <p class="rt__label">מתאים לכם אם</p>
-              <p class="rt__text">אתם רוצים גם חוות דעת שמאית וגם גורם מקצועי שימשיך לרכז, לבדוק ולהציג את הצד השמאי בהתנהלות מול חברת הביטוח.</p>
-
-              <p class="rt__label">מה מקבלים</p>
-              <p class="rt__text">חוות דעת שמאית וניהול של החלק המקצועי בתיק, בהתאם להיקף שמוגדר מראש.</p>
-
-              <p class="rt__note">השירות אינו כולל הליך משפטי, נזק חדש או הרחבת היקף שלא סוכמה.</p>
-
-              <button type="button" class="rt__open" data-svc-toggle
-                      aria-expanded="false" aria-controls="svc-appraisal_managed-body">
-                <span class="rt__open-label">מה כולל</span>
-                <span class="svc__chev" aria-hidden="true"></span>
-              </button>
-
-              <div class="svc__body" id="svc-appraisal_managed-body" data-svc-body hidden>
-                <p class="svc__label">למה נדרשת כאן עבודה מקצועית מתמשכת?</p>
-                <p class="svc__why">העבודה המקצועית אינה תמיד מסתיימת עם מסירת חוות הדעת. במהלך הטיפול עשויים להתקבל מסמכים, שאלות, התייחסויות או הצעות מעודכנות. ניהול מקצועי שומר על הקשר בין הממצאים, הכימות והעמדה השמאית, כדי שהמשך ההתנהלות לא יתבסס על חלקים מנותקים של התיק.</p>
-                <p class="svc__label">מה כוללת חוות הדעת?</p>
-                <ul class="svc__list">
-                  <li>בחינת הממצאים והמסמכים הרלוונטיים.</li>
-                  <li>הגדרת רכיבי הנזק וצורכי השיקום.</li>
-                  <li>כימות כמויות ועלויות בהתאם לחומר שניתן לבדוק.</li>
-                  <li>גיבוש חוות דעת שמאית והצגת המסקנות המקצועיות.</li>
-                </ul>
-                <p class="svc__label">מה מוסיף ניהול התיק?</p>
-                <ul class="svc__list">
-                  <li>ריכוז ועדכון החומר המקצועי לאורך הטיפול.</li>
-                  <li>הצגת ההסברים והממצאים השמאיים במסגרת ההתנהלות מול חברת הביטוח.</li>
-                  <li>בחינת התייחסויות או חומר מקצועי חדש שמתקבלים במהלך התיק.</li>
-                  <li>זיהוי נושאים שעדיין דורשים מענה והמלצה על הצעד המקצועי הבא, במסגרת ההיקף שסוכם.</li>
-                </ul>
-                <p class="svc__label">מה תקבלו?</p>
-                <ul class="svc__list">
-                  <li>חוות דעת שמאית מלאה בהתאם להיקף שנקבע.</li>
-                  <li>תיק מקצועי מרוכז ורציף לאורך שלבי הטיפול.</li>
-                  <li>ליווי ומענה מקצועי בהתאם לצורכי התיק ולהיקף שסוכם.</li>
-                  <li>תמונת מצב מקצועית שמאפשרת להבין מה הושלם ומה עדיין דורש טיפול.</li>
-                </ul>
-
-                <p class="svc__value">המחיר מתייחס לחוות דעת ולליווי מקצועי בתיק סטנדרטי, בהתאם להיקף שייקבע מראש.</p>
-
-                <div class="svc__price-box" id="svc-appraisal_managed-price" data-svc-price>
-                  <p class="svc__price"><bdi dir="rtl">4,800 ₪</bdi></p>
-                  <p class="svc__caveat">תיק מורכב, רב־צדדי או בעל היקף חריג יתומחר מראש בהצעה נפרדת.</p>
-                  <p class="svc__credit">אם כבר הוכנה חוות דעת באותו אירוע, הסכום ששולם עליה יקוזז ממחיר החבילה.</p>
-                  <a class="svc__cta" href="/check/" data-cta-location="pricing" data-measure-cta="damage_appraisal_managed_check"
-                     data-service-interest="appraisal_managed">לבדוק התאמה למסלול הזה — ללא עלות</a>
-                  <p class="svc__cta-note">בדיקת ההתאמה הראשונית ללא עלות וללא התחייבות.</p>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          
-          <div class="rt__route" data-route="unsure" hidden>
-            <h4 class="rt__head">עדיין לא ברור מה נדרש?</h4>
-
-            <div class="rt__gate">
-              <p class="rt__gate-title">בדיקת התאמה ראשונית ללא עלות</p>
-              <p class="rt__text">נעבור בקצרה על מה שקרה, מה כבר ידוע ואיזה חומר קיים, כדי להבין איזה מסלול עשוי להתאים למצב. לא כל מקרה מצדיק חוות דעת מלאה, ולעיתים הצעד הנכון הוא קודם להשלים מידע או להמתין.</p>
-              
-              <a class="btn" data-cta-location="pricing" data-measure-cta="damage_unsure_check" href="/check/">בדיקת התאמה ראשונית</a>
-            </div>
-
-            <p class="rt__maybe">אם לאחר הבדיקה עדיין לא יהיה אפשר להמליץ באחריות על חוות דעת מלאה, ייתכן שתוצע בדיקת כדאיות מרחוק.</p>
-
-            <button type="button" class="rt__more" data-feas-toggle
-                    aria-expanded="false" aria-controls="rt-feas">מה כוללת בדיקת כדאיות?</button>
-
-            <div class="rt__feas" id="rt-feas" data-feas hidden>
-              <article class="rt__svc rt__svc--quiet" data-service="remote_feasibility">
-                <h5 class="rt__subhead">בדיקת כדאיות מרחוק — להבין אם נכון להתקדם</h5>
-
-                <p class="rt__label">מתאים לכם אם</p>
-                <p class="rt__text">המקרה עדיין אינו ברור, קיים חומר ראשוני שניתן לבדוק, ולפני עבודה מלאה נדרשת מסקנה מקצועית אם יש הצדקה להתקדם ומה עדיין חסר.</p>
-
-                <p class="rt__label">מה מקבלים</p>
-                <p class="rt__text">בדיקה ממוקדת של החומר הקיים ומסקנה קצרה בכתב לגבי הצעד המקצועי הבא.</p>
-
-                
-                <div class="svc__body" id="svc-remote_feasibility-body" data-svc-body>
-                  <p class="svc__label">למה נדרשת בדיקה נפרדת?</p>
-                  <p class="svc__why">לעיתים מוקדם מדי להכין חוות דעת מלאה, אך גם תיאור קצר של המקרה אינו מספיק כדי להמליץ באחריות על המשך. בדיקת הכדאיות מאפשרת לעיין בחומר עצמו, לזהות את נקודות אי־הוודאות ולהחליט אם נדרשת עבודה רחבה יותר.</p>
-                  <p class="svc__label">מה נבדק?</p>
-                  <ul class="svc__list">
-                    <li>מה כבר ידוע על האירוע ועל הנזק מתוך החומר שנמסר.</li>
-                    <li>אילו תמונות, דוחות או מסמכים תומכים בתמונה הקיימת.</li>
-                    <li>אילו פערי מידע מונעים בשלב זה מסקנה רחבה יותר.</li>
-                    <li>האם קיימת הצדקה מקצועית להמשך ואיזה מסלול ראוי לבחון.</li>
-                  </ul>
-                  <p class="svc__label">מה תקבלו?</p>
-                  <ul class="svc__list">
-                    <li>סיכום קצר של התמונה שניתן לבסס מתוך החומר.</li>
-                    <li>פירוט המידע המהותי שעדיין חסר, ככל שחסר.</li>
-                    <li>מסקנה אם קיימת הצדקה מקצועית להתקדם לעבודה מלאה.</li>
-                    <li>המלצה על הצעד הבא: השלמת חומר, חוות דעת, ניהול תיק או המתנה.</li>
-                  </ul>
-                  <p class="svc__label">הערך של השירות</p>
-                  <p class="svc__next">הערך הוא בקבלת החלטה מקצועית לפני השקעה בעבודה רחבה יותר. אם קיימת הצדקה, ניתן לבחון מעבר לחוות דעת או למסלול ניהול; אם לא, הלקוח יודע זאת לפני התחייבות לשירות גדול יותר.</p>
-
-                  <div class="svc__price-box" id="svc-remote_feasibility-price" data-svc-price>
-                    <p class="svc__price"><bdi dir="rtl">700 ₪</bdi></p>
-                    <p class="svc__credit">אם ממשיכים באותו אירוע לחוות דעת או לניהול תיק, הסכום מתקזז במלואו.</p>
-                    <a class="svc__cta" href="/check/" data-cta-location="pricing" data-measure-cta="damage_remote_feasibility_check"
-                       data-service-interest="remote_feasibility">לבדוק התאמה למסלול הזה — ללא עלות</a>
-                    <p class="svc__cta-note">בדיקת ההתאמה הראשונית ללא עלות וללא התחייבות.</p>
-                  </div>
-                </div>
-              </article>
-            </div>
-          </div>
-
-          
-        </div>
-
-        <div class="dmg-pricing__close" data-reveal>
-          <p class="dmg-pricing__close-line">כל המחירים המוצגים הם המחירים הסופיים לתשלום.</p>
-          <p class="dmg-pricing__close-line">בשיחה נבדוק מה נדרש ונאשר את היקף העבודה לפני שמתחילים.</p>
-          
+        <div class="dmg-pricing__cta" data-reveal>
+          <a class="btn" data-cta-location="pricing" data-measure-cta="damage_pricing_entry" href="/assistant/">להתחיל בדיקה ללא עלות</a>
         </div>
       </div>
     </section>
-
-    
-    
   </main>
 
   <footer class="site-footer">
