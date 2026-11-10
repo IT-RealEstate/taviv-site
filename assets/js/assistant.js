@@ -96,9 +96,12 @@
     return '<div class="asst__case"><span class="asst__case-icon">' + icon(c.icon) + '</span><span>' + esc(c.label) + '</span></div>';
   }
 
+  // the site's accent everywhere; the colour of the kind of damage only on the damage itself
+  var ACCENT = '#1F8EB1';
   function show(html, color) {
     clearTimers();
-    root.style.setProperty('--fam', color || '#1F8EB1');
+    root.style.setProperty('--fam', ACCENT);
+    root.style.setProperty('--dmg', color || ACCENT);
     root.innerHTML = html;
     window.scrollTo(0, 0);
     var h = root.querySelector('.asst__h');
@@ -255,43 +258,29 @@
       '<p class="report__lead">' + esc(x.lead) + '</p><p class="report__text">' + esc(x.text) + '</p>');
   }
 
-  function processHtml(s) {
-    var P = data.doc.process;
-    if (!P) { return ''; }
-    var here = P.here[s.stage];
-    return block('list', data.doc.sections.process,
-      '<ol class="steps">' + P.steps.map(function (x, i) {
-        return '<li class="steps__item' + (i === here ? ' is-here' : '') + '">' +
-          '<span class="steps__n">' + (i + 1) + '</span>' +
-          '<span class="steps__body"><b>' + esc(x.title) + '</b>' +
-          (i === here ? '<em class="steps__here">אתם כאן</em>' : '') +
-          '<span>' + esc(x.text) + '</span></span></li>';
-      }).join('') + '</ol>' +
-      '<p class="report__text is-dim">' + esc(P.note) + '</p>');
+  // only what matters from where they stand: three dates, one reason to start now
+  function timelineHtml(s) {
+    var T = data.doc.timeline, x = T && T.stages[s.stage];
+    if (!x) { return ''; }
+    return block('scale', data.doc.sections.timeline,
+      '<ul class="law">' + x.rows.map(function (r) {
+        return '<li class="law__row"><span class="law__when' + (r.unit ? '' : ' is-word') + '"><b>' + esc(r.when) + '</b>' +
+          (r.unit ? '<small>' + esc(r.unit) + '</small>' : '') + '</span>' +
+          '<span class="law__body"><b>' + esc(r.title) + '</b><span>' + esc(r.text) + '</span>' +
+          (r.src ? '<small class="law__src">' + esc(r.src) + '</small>' : '') + '</span></li>';
+      }).join('') + '</ul>' +
+      '<p class="report__ask"><small>ולכן</small>' + esc(x.why) + '</p>' +
+      '<p class="report__ref">' + esc(T.note) + '</p>');
   }
 
-  function lawHtml() {
-    var L = data.doc.law;
-    if (!L) { return ''; }
-    return block('scale', data.doc.sections.law,
-      '<ul class="law">' + L.rows.map(function (x) {
-        return '<li class="law__row"><span class="law__when"><b>' + esc(x.when) + '</b>' +
-          (x.unit ? '<small>' + esc(x.unit) + '</small>' : '') + '</span>' +
-          '<span class="law__body"><b>' + esc(x.title) + '</b><span>' + esc(x.text) + '</span>' +
-          '<small class="law__src">' + esc(x.src) + '</small></span></li>';
-      }).join('') + '</ul>' +
-      '<p class="law__delays-title">מה יכול לעכב</p>' +
-      '<ul class="report__list is-todo">' + L.delays.map(function (t) {
-        return '<li>' + icon('clock') + '<span>' + esc(t) + '</span></li>';
-      }).join('') + '</ul>' +
-      '<p class="report__ask"><small>ולכן</small>' + esc(L.urgency) + '</p>' +
-      '<p class="report__ref">' + esc(L.note) + '</p>');
-  }
-
-  function nextHtml() {
+  function nextHtml(parts) {
     var N = data.doc.next;
     if (!N) { return ''; }
-    return block('check', data.doc.sections.next,
+    var total = parts.done.length + parts.missing.length;
+    // what they already did is the first step of this one
+    var started = parts.done.length && N.started ?
+      '<p class="report__lead">' + esc(N.started.replace('{done}', parts.done.length).replace('{total}', total)) + '</p>' : '';
+    return block('check', data.doc.sections.next, started +
       '<p class="report__text">' + esc(N.lead) + '</p>' +
       '<ul class="needs">' + N.items.map(function (x) {
         return '<li class="needs__item' + (x.urgent ? ' is-urgent' : '') + '">' + icon(x.icon) +
@@ -301,9 +290,10 @@
 
   function lockedHtml(c, s, parts) {
     var T = data.doc.sections, r = theRuling(c, s), html = situationHtml(s);
-    if (parts.missing.length) {
-      html += '<section class="report__block"><h2 class="report__label">' + icon('search') + esc(T.missing) + ' (' + parts.missing.length + ')</h2>' +
-        '<ul class="report__list is-todo">' + parts.missing.map(function (a) {
+    var miss = parts.missing.slice(0, 3);
+    if (miss.length) {
+      html += '<section class="report__block"><h2 class="report__label">' + icon('search') + esc(T.missing) + '</h2>' +
+        '<ul class="report__list is-todo">' + miss.map(function (a) {
           return '<li>' + icon(a.icon) + '<span>' + esc(a.miss) + '</span></li>';
         }).join('') + '</ul></section>';
     }
@@ -315,25 +305,26 @@
       html += '<section class="report__block"><h2 class="report__label">' + icon('scale') + esc(T.ruling) +
         (r.verified ? '' : '<span class="report__draft">טיוטה לאימות</span>') + '</h2>' +
         '<p class="report__text">' + esc(r.story) + '</p>' +
-        '<p class="report__text is-dim">' + esc(r.differs) + '</p>' +
         '<p class="report__ask"><small>השאלה אצלכם</small>' + esc(r.ask) + '</p>' +
         '<p class="report__ref">' + esc(r.court) + ', ' + esc(r.year) + ' · <span dir="rtl">' + esc(r.number) + '</span></p>' +
         '<p class="report__ref">' + esc(data.doc.rulingNote) + '</p></section>';
     }
-    html += processHtml(s) + lawHtml();
+    html += timelineHtml(s);
     html += '<section class="report__block"><h2 class="report__label">' + icon('check') + esc(T.appraiser) + '</h2>' +
-      '<ul class="report__list is-fam">' + c.doc.appraiser.map(function (t) {
+      (data.doc.appraiserLead ? '<p class="report__lead">' + esc(data.doc.appraiserLead) + '</p>' : '') +
+      '<ul class="report__list is-fam">' + c.doc.appraiser.slice(0, 3).map(function (t) {
         return '<li>' + icon('tick') + '<span>' + esc(t) + '</span></li>';
-      }).join('') + '</ul></section>';
-    return html + nextHtml();
+      }).join('') + '</ul>' +
+      (data.doc.appraiserNote ? '<p class="report__text is-dim">' + esc(data.doc.appraiserNote) + '</p>' : '') + '</section>';
+    return html + nextHtml(parts);
   }
 
   function gateHtml(c, s, parts) {
     var T = data.doc.sections, r = theRuling(c, s);
     var inside = [T.situation];
-    if (parts.missing.length) { inside.push(T.missing + ' (' + parts.missing.length + ')'); }
+    if (parts.missing.length) { inside.push(T.missing); }
     if (r) { inside.push(T.ruling); }
-    inside.push(T.process, T.law, T.next);
+    inside.push(T.timeline, T.next);
     return '<form class="gate" novalidate autocomplete="on" data-gate>' +
       '<p class="gate__title">' + icon('lock') + 'המסמך המלא נפתח אחרי השארת פרטים</p>' +
       '<ul class="gate__inside">' + inside.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
