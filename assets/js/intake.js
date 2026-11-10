@@ -368,6 +368,10 @@
       Promise.resolve().then(function () {
         var payload = buildPayload();
 
+        // Parallel, fire-and-forget copy to Taviv App. Does not affect the Apps Script
+        // outcome below; if the app is unreachable the visitor keeps the WhatsApp path.
+        if (window.TAVIV_APP_HANDOFF) window.TAVIV_APP_HANDOFF.create(payload);
+
         function attempt() {
           return sendLead(payload).then(function (json) {
             return { confirmed: createConfirmed(json, payload.lead_id), json: json };
@@ -504,6 +508,7 @@
           }, DRYRUN_DELAY_MS);
         });
       }
+      if (window.TAVIV_APP_HANDOFF) window.TAVIV_APP_HANDOFF.enrich(payload);
       return postIntakeJson(body).then(function (json) {
         return {
           ok: !!(json && json.ok === true && json.lead_id === payload.lead_id),
@@ -847,6 +852,14 @@
       if (wa && window.TAVIV_CONTACT) {
         wa.setAttribute('href', window.TAVIV_CONTACT.continuationUrl(state.public_handoff_code));
         wa.setAttribute('target', '_blank');
+      }
+      var appLink = success.querySelector('[data-continue-app]');
+      if (appLink && window.TAVIV_APP_HANDOFF) {
+        // Shown only when the app confirmed the lead and returned a valid /start link.
+        window.TAVIV_APP_HANDOFF.onDestination(function (url) {
+          appLink.setAttribute('href', url);
+          appLink.hidden = false;
+        });
       }
       form.hidden = true;
       success.hidden = false;
