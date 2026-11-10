@@ -24,19 +24,18 @@
   <link rel="preload" href="assets/fonts/IBMPlexSansHebrew-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/IBMPlexSansHebrew-Medium.woff2" as="font" type="font/woff2" crossorigin>
 
-  <link rel="stylesheet" href="assets/css/tokens.css">
-  <link rel="stylesheet" href="assets/css/base.css">
-  <link rel="stylesheet" href="assets/css/components.css">
-  <link rel="stylesheet" href="assets/css/nav.css">
-  <link rel="stylesheet" href="assets/css/s1-hero.css">
-  <link rel="stylesheet" href="assets/css/hero-building.css">
-  <link rel="stylesheet" href="assets/css/reassure.css">
-  <link rel="stylesheet" href="assets/css/s2-role.css">
-  <link rel="stylesheet" href="assets/css/s3-independent.css">
-  <link rel="stylesheet" href="assets/css/s4-about.css">
-  <link rel="stylesheet" href="assets/css/s5-process.css">
-  <link rel="stylesheet" href="assets/css/s6-urgency.css">
-  <link rel="stylesheet" href="assets/css/footer.css">
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/base.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/components.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/nav.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/s1-hero.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/hero-building.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/reassure.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/s2-role.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/s3-independent.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/s6-urgency.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/footer.css?v=20261113">
+  <link rel="stylesheet" href="assets/css/home-flow.css?v=20261113">
 
   <script type="application/ld+json">
   {
@@ -98,66 +97,71 @@
   </header>
 
   <main id="main">
-
     <section id="s1-hero" data-measure-section="home_hero" class="section s1-hero" aria-labelledby="hero-title">
-      <div class="wrap s1-hero__inner"><div class="tv-hero" id="tv-hero">
-          <div class="tv-frame">
-            <video class="tv-video" muted playsinline preload="none"
-                   poster="assets/media/building-loop-poster.jpg"
-                   aria-label="בניין בחתך: בכל קומה מקרה אחר של נזק לרכוש"></video>
-          </div>
-          <div class="tv-layer" aria-label="בחירת סוג הנזק"></div>
-          <div class="tv-panel" role="dialog" aria-label="על הנזק שנבחר">
-            <span class="tv-panel__tag"></span>
-            <h3 class="tv-panel__title"></h3>
-            <p class="tv-panel__body"></p>
-            <div class="tv-panel__actions">
-              <a class="btn btn--compact tv-panel__cta" href="/check/">השאירו פרטים</a>
-              <button type="button" class="tv-panel__close">חזרה לבניין</button>
-            </div>
-          </div>
-        </div>
-        <div class="s1-hero__content">
-          
+      <div class="wrap s1-hero__inner--v2">
+        <div class="s1-hero__head">
           <h1 id="hero-title" class="s1-hero__title">
             <span class="line">שמאי רכוש.</span>
             <span class="line">מטעמך, בנפרד מהגוף&#160;המשלם.</span>
           </h1>
+          <p class="s1-hero__ask"><strong>היכן הופיע הנזק?</strong> בחרו את המקום בבניין.</p>
+        </div>
 
-          
+        <div class="tv-hero" id="tv-hero">
+          <div class="tv-crop">
+            <div class="tv-stage">
+              <div class="tv-frame">
+                <video class="tv-video" muted playsinline preload="none"
+                       poster="assets/media/building-loop-poster.jpg"
+                       aria-label="בניין בחתך: בכל קומה מקרה אחר של נזק לרכוש"></video>
+              </div>
+              <div class="tv-layer" role="group" aria-label="בחירת סוג הנזק"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="s1-hero__more">
           <p class="s1-hero__lede">עושה סדר בממצאים, בנזק ובעלויות — כדי שתדעו מה כבר ברור, מה עדיין חסר ואיך נכון להתקדם מול הגוף המבטח.</p>
-
           <div class="s1-hero__optional">
             <p>בהוכחת נזק, אין פרט שולי.</p>
           </div>
-
-          
-          <a class="btn" data-cta-location="hero" data-measure-cta="home_hero_check" href="/check/">בדיקת התאמה ראשונית</a>
-
+          <a class="btn" data-cta-location="hero" data-measure-cta="home_hero_check" data-pick-building href="/assistant/">בדיקת התאמה ראשונית</a>
           <p class="s1-hero__reassurance">בדיקת התאמה ראשונית ללא עלות.</p>
         </div>
-
-        
       </div>
     </section>
 
-    
-    
-    <div class="section reassure">
+    <section id="s6-urgency" data-measure-section="home_urgency" class="section s6-urgency" aria-labelledby="urgency-title">
       <div class="wrap">
-        <div class="reassure__grid">
-          <div class="reassure__item" data-reassure-id="private_appraiser_reimbursement">
-            <h2 class="reassure__head">שמאי מטעם המבטחת אינו המילה האחרונה.</h2>
-            <p class="reassure__body">באירוע מכוסה, גם ההשקעה בשמאי מטעמכם עשויה להיכלל בתגמולי הביטוח — בכפוף לתנאי הפוליסה, למטרת השמאות ולנסיבות המקרה.</p>
-          </div>
-          <div class="reassure__item" data-reassure-id="avoid_legal_escalation">
-            <h2 class="reassure__head">לא כל מחלוקת ביטוחית צריכה להפוך להליך משפטי.</h2>
-            <p class="reassure__body">לעיתים חוות דעת שמאית מנומקת מאפשרת לנהל משא ומתן, לצמצם פערים ולהגיע להסכמה או לפשרה — לפני שנכנסים להליך משפטי יקר וממושך. כאשר נדרש עורך דין, השומה מספקת לו תשתית מקצועית מבוססת.</p>
-          </div>
+        <h2 id="urgency-title" class="s6-urgency__title" data-reveal>מה שכבר קרה קובע מה צריך לבדוק עכשיו</h2>
+        <div class="s6-urgency__states">
+          <a class="state-card" data-pick-building data-state="now" href="/assistant/?state=now">
+            <span class="state-card__icon"><svg class="ti" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg></span>
+            <span><span class="state-card__title">הנזק קרה עכשיו</span><span class="state-card__desc">לפני תיקון, פינוי או ייבוש, חשוב לתעד את המצב.</span></span>
+            <span class="state-card__go"><svg class="ti" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></span>
+          </a>
+          <a class="state-card" data-pick-building data-state="checked" href="/assistant/?state=checked">
+            <span class="state-card__icon"><svg class="ti" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M8.2 12.4l2.6 2.6 5-5.4"/></svg></span>
+            <span><span class="state-card__title">כבר הייתה בדיקה או התחיל תיקון</span><span class="state-card__desc">אפשר לבדוק מה נפגע ומה עדיין נדרש לשיקום.</span></span>
+            <span class="state-card__go"><svg class="ti" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></span>
+          </a>
+          <a class="state-card" data-pick-building data-state="returned" href="/assistant/?state=returned">
+            <span class="state-card__icon"><svg class="ti" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 12a7 7 0 1 1-2.3-5.2"/><path d="M19 4.5V9h-4.5"/></svg></span>
+            <span><span class="state-card__title">כבר תיקנו, אבל הבעיה חזרה או לא נפתרה</span><span class="state-card__desc">בודקים מה כבר נעשה ומה נשאר פתוח.</span></span>
+            <span class="state-card__go"><svg class="ti" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></span>
+          </a>
+          <a class="state-card" data-pick-building data-state="dispute" href="/assistant/?state=dispute">
+            <span class="state-card__icon"><svg class="ti" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 12h5M10 16h5"/></svg></span>
+            <span><span class="state-card__title">כבר יש שומה, הצעה או מחלוקת</span><span class="state-card__desc">עוברים על החומר הקיים ובודקים מה חסר.</span></span>
+            <span class="state-card__go"><svg class="ti" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></span>
+          </a>
+        </div>
+        <div class="s6-urgency__aside">
+          <p class="s6-urgency__spatial" data-reveal>גם להמתין זו החלטה.</p>
+          <p class="s6-urgency__body">נזק יכול להמשיך להתפתח, ממצאים משתנים, ותיקון לפני תיעוד עלול להעלים מידע מכריע.</p>
         </div>
       </div>
-    </div>
-    
+    </section>
 
     <section id="s2-role" data-measure-section="home_role" class="section s2-role" aria-labelledby="role-title">
       <div class="wrap">
@@ -165,7 +169,7 @@
 
         <h2 id="role-title" class="s2-role__title" data-reveal>מחבר בין הממצאים לדרך פעולה</h2>
 
-        <p class="s2-role__body">מאתר נזילות, מהנדס, קבלן ובעלי מקצוע אחרים נותנים כל אחד מענה בתחום שלו. שמאי הרכוש מחבר בין הממצאים, הדוחות, העלויות וההמלצות — כדי להבין את התמונה המלאה ולדעת מה הצעד הבא.</p>
+        <details class="more"><summary>להרחבה</summary><p class="s2-role__body">מאתר נזילות, מהנדס, קבלן ובעלי מקצוע אחרים נותנים כל אחד מענה בתחום שלו. שמאי הרכוש מחבר בין הממצאים, הדוחות, העלויות וההמלצות — כדי להבין את התמונה המלאה ולדעת מה הצעד הבא.</p></details>
 
         <div class="s2-role__grid" data-reveal>
           <div class="s2-role__item">
@@ -184,7 +188,7 @@
       </div>
     </section>
 
-    <section id="s3-independent" data-measure-section="home_independent" class="section s3-independent" aria-labelledby="independent-title">
+        <section id="s3-independent" data-measure-section="home_independent" class="section s3-independent" aria-labelledby="independent-title">
       <div class="wrap s3-independent__inner">
         <div class="s3-independent__content">
           <h2 id="independent-title" class="s3-independent__title" data-reveal>בדיקה מטעמך מוסיפה איזון</h2>
@@ -198,52 +202,27 @@
       </div>
     </section>
 
-    <section id="s6-urgency" data-measure-section="home_urgency" class="section s6-urgency" aria-labelledby="urgency-title">
-      <div class="wrap s6-urgency__top">
-        <div class="s6-urgency__intro">
-          <h2 id="urgency-title" class="s6-urgency__title" data-reveal>מה שכבר קרה קובע מה צריך לבדוק עכשיו</h2>
-
-          <p class="s6-urgency__spatial" data-reveal>גם להמתין זו החלטה.</p>
-
-          <p class="s6-urgency__body">נזק יכול להמשיך להתפתח, ממצאים משתנים, ותיקון לפני תיעוד עלול להעלים מידע מכריע.</p>
-        </div>
-
-        
-      </div>
-
-      <div class="wrap s6-urgency__bottom">
-        <div class="s6-urgency__states" data-reveal>
-          <div class="s6-urgency__state">
-            <h3 class="s6-urgency__state-title">הנזק קרה עכשיו</h3>
-            <p class="s6-urgency__state-desc">לפני תיקון, פינוי או ייבוש, חשוב לתעד את המצב.</p>
+        <div class="section reassure">
+      <div class="wrap">
+        <div class="reassure__grid">
+          <div class="reassure__item" data-reassure-id="private_appraiser_reimbursement">
+            <h2 class="reassure__head">שמאי מטעם המבטחת אינו המילה האחרונה.</h2>
+            <details class="more"><summary>להרחבה</summary><p class="reassure__body">באירוע מכוסה, גם ההשקעה בשמאי מטעמכם עשויה להיכלל בתגמולי הביטוח — בכפוף לתנאי הפוליסה, למטרת השמאות ולנסיבות המקרה.</p></details>
           </div>
-
-          <div class="s6-urgency__state">
-            <h3 class="s6-urgency__state-title">כבר הייתה בדיקה או התחיל תיקון</h3>
-            <p class="s6-urgency__state-desc">אפשר לבדוק מה נפגע ומה עדיין נדרש לשיקום.</p>
-          </div>
-
-          <div class="s6-urgency__state">
-            <h3 class="s6-urgency__state-title">כבר תיקנו, אבל הבעיה חזרה או לא נפתרה</h3>
-            <p class="s6-urgency__state-desc">בודקים מה כבר נעשה ומה נשאר פתוח.</p>
-          </div>
-
-          <div class="s6-urgency__state">
-            <h3 class="s6-urgency__state-title">כבר יש שומה, הצעה או מחלוקת</h3>
-            <p class="s6-urgency__state-desc">עוברים על החומר הקיים ובודקים מה חסר.</p>
+          <div class="reassure__item" data-reassure-id="avoid_legal_escalation">
+            <h2 class="reassure__head">לא כל מחלוקת ביטוחית צריכה להפוך להליך משפטי.</h2>
+            <details class="more"><summary>להרחבה</summary><p class="reassure__body">לעיתים חוות דעת שמאית מנומקת מאפשרת לנהל משא ומתן, לצמצם פערים ולהגיע להסכמה או לפשרה — לפני שנכנסים להליך משפטי יקר וממושך. כאשר נדרש עורך דין, השומה מספקת לו תשתית מקצועית מבוססת.</p></details>
           </div>
         </div>
-
       </div>
-    
+        <div class="section home-routes">
       <div class="wrap s6-urgency__routes">
-        <a class="btn btn--compact" href="/damage/">מה שמאי רכוש בודק</a>
-        <a class="btn btn--compact" href="/pricing/">מחירים</a>
-        <a class="btn btn--compact" href="/faq/">שאלות נפוצות</a>
-        <a class="btn btn--compact" href="/guides/">מדריכים</a>
+        <a class="btn btn--quiet btn--compact" href="/damage/">מה שמאי רכוש בודק</a>
+        <a class="btn btn--quiet btn--compact" href="/pricing/">מחירים</a>
+        <a class="btn btn--quiet btn--compact" href="/faq/">שאלות נפוצות</a>
+        <a class="btn btn--quiet btn--compact" href="/guides/">מדריכים</a>
       </div>
-    </section>
-
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -267,11 +246,12 @@
     </div>
   </footer>
 
-  <script src="assets/js/measurement.js"></script>
-  <script src="assets/js/attribution.js"></script>
+  <script src="assets/js/measurement.js?v=20261113"></script>
+  <script src="assets/js/attribution.js?v=20261113"></script>
   
-  <script src="assets/js/intake-config.js"></script>
-  <script src="assets/js/main.js"></script>
-  <script src="assets/js/hero-building.js" defer></script>
+  <script src="assets/js/intake-config.js?v=20261113"></script>
+  <script src="assets/js/main.js?v=20261113"></script>
+  <script src="assets/js/taviv-icons.js?v=20261113" defer></script>
+  <script src="assets/js/hero-building.js?v=20261113" defer></script>
 </body>
 </html>
