@@ -36,22 +36,29 @@
     stage: params.state || '',     // the general stage picked on the home page, if any
     stateId: '',                   // the answer that fits this kind of damage
     done: {},
-    name: '', phone: '', unlocked: false, leadId: ''
+    name: '', phone: '', email: '', unlocked: false, leadId: ''
   };
 
   function load() {
     try {
       var saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null');
       if (saved && saved.caseId === st.caseId) {
-        st.name = saved.name || ''; st.phone = saved.phone || '';
+        st.name = saved.name || ''; st.phone = saved.phone || ''; st.email = saved.email || '';
         st.leadId = saved.leadId || '';
+      }
+      // details already typed into the /check/ form in this visit fill in here too
+      var draft = JSON.parse(sessionStorage.getItem('intake_draft_v2') || 'null');
+      if (draft) {
+        if (!st.name && draft.full_name) { st.name = draft.full_name; }
+        if (!st.phone && draft.phone_raw) { st.phone = draft.phone_raw; }
+        if (!st.email && draft.email) { st.email = draft.email; }
       }
     } catch (e) {}
   }
   function save() {
     try {
       sessionStorage.setItem(STORE_KEY, JSON.stringify({
-        caseId: st.caseId, name: st.name, phone: st.phone, leadId: st.leadId
+        caseId: st.caseId, name: st.name, phone: st.phone, email: st.email, leadId: st.leadId
       }));
     } catch (e) {}
   }
@@ -200,30 +207,35 @@
       theRuling(c, s) ? 'מקרה דומה שהגיע לבית המשפט' : 'איפה מקרים כאלה נתקעים',
       'הצעד הבא שלכם'
     ];
+    var tip = c.tip ? '<aside class="prep__tip" data-tip><p class="prep__tip-label">' + icon('bulb') + 'טיפ בינתיים</p>' +
+      '<p class="prep__tip-text">' + esc(c.tip) + '</p></aside>' : '';
     show('<div class="prep">' + logo('is-working') +
       '<h1 class="asst__h">מכינים את המסמך שלכם</h1>' +
       '<p class="prep__sub">עוד רגע</p>' +
       '<ul class="prep__list">' + lines.map(function (l) {
         return '<li class="prep__item"><span class="prep__mark">' + icon('tick') + '</span><span>' + l + '</span></li>';
-      }).join('') + '</ul></div>', famColor(c));
+      }).join('') + '</ul>' + tip + '</div>', famColor(c));
 
     var items = root.querySelectorAll('.prep__item');
+    var tipEl = root.querySelector('[data-tip]');
     var mark = root.querySelector('.tlogo');
-    var step = reduceMotion ? 150 : 470, work = reduceMotion ? 110 : 360;
+    // about 4.5s: long enough to read the tip
+    var step = reduceMotion ? 300 : 635, work = reduceMotion ? 200 : 486;
+    if (tipEl) { timers.push(window.setTimeout(function () { tipEl.classList.add('is-on'); }, reduceMotion ? 0 : 200 + step)); }
     Array.prototype.forEach.call(items, function (el, i) {
       timers.push(window.setTimeout(function () { el.classList.add('is-on'); }, 200 + i * step));
       timers.push(window.setTimeout(function () { el.classList.remove('is-on'); el.classList.add('is-ok'); }, 200 + i * step + work));
     });
     var end = 200 + (items.length - 1) * step + work;
     timers.push(window.setTimeout(function () { mark.classList.remove('is-working'); mark.classList.add('is-done'); }, end));
-    timers.push(window.setTimeout(docScreen, end + (reduceMotion ? 150 : 450)));
+    timers.push(window.setTimeout(docScreen, end + (reduceMotion ? 300 : 608)));
   }
 
   /* ---------- the document ---------- */
   function summaryLines(c, s, parts, withContact) {
     var names = function (list, key) { return list.map(function (a) { return a[key]; }); };
     var lines = ['שלום, זה הסיכום מהעוזר באתר טביב שמאות.'];
-    if (withContact) { lines.push('שם: ' + st.name, 'טלפון: ' + st.phone); }
+    if (withContact) { lines.push('שם: ' + st.name, 'טלפון: ' + st.phone, 'אימייל: ' + st.email); }
     lines.push('הנזק: ' + c.label, 'המצב: ' + s.label);
     lines.push('כבר נעשה: ' + (parts.done.length ? names(parts.done, 'q').join(' · ') : 'עוד לא'));
     if (parts.flags.length) { lines.push('לתשומת לב: ' + names(parts.flags, 'q').join(' · ')); }
@@ -267,20 +279,21 @@
     inside.push(T.stuck);
     if (r) { inside.push(T.ruling); }
     inside.push(T.appraiser);
-    return '<form class="gate" novalidate data-gate>' +
+    return '<form class="gate" novalidate autocomplete="on" data-gate>' +
       '<p class="gate__title">' + icon('lock') + 'המסמך המלא נפתח אחרי השארת פרטים</p>' +
       '<ul class="gate__inside">' + inside.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
       '<label class="gate__field"><span>שם</span>' +
         '<input type="text" name="full_name" autocomplete="name" enterkeyhint="next" value="' + esc(st.name) + '"></label>' +
       '<label class="gate__field"><span>טלפון נייד</span>' +
-        '<input type="tel" name="phone_raw" inputmode="tel" autocomplete="tel" dir="ltr" enterkeyhint="done" placeholder="050-0000000" value="' + esc(st.phone) + '"></label>' +
+        '<input type="tel" name="phone_raw" inputmode="tel" autocomplete="tel" dir="ltr" enterkeyhint="next" placeholder="050-0000000" value="' + esc(st.phone) + '"></label>' +
+      '<label class="gate__field"><span>אימייל</span>' +
+        '<input type="email" name="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" dir="ltr" enterkeyhint="done" placeholder="name@example.com" value="' + esc(st.email) + '"></label>' +
       '<input class="gate__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<p class="gate__error" role="alert" hidden></p>' +
       '<button type="submit" class="asst__go">פתיחת המסמך המלא</button>' +
       '<p class="gate__consent">' + esc(data.doc.consent) + ' <a href="' + esc(PATHS.legal || '/legal/') + '">לקריאה</a></p>' +
       (DEMO ? '<p class="gate__consent">דמו: הפרטים לא נשלחים לשום מקום.</p>' : '') +
-      '</form>' +
-      '<a class="asst__alt" href="' + esc(waUrl(summaryLines(c, s, parts, false))) + '" rel="noopener">או פנייה בוואטסאפ, בלי המסמך</a>';
+      '</form>';
   }
 
   function afterHtml(c, s, parts) {
@@ -298,7 +311,7 @@
     var parts = split(c);
     var today = new Date().toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
 
-    show(top(3, true) +
+    show(top(3, false) +
       '<h1 class="asst__h">המסמך שלכם מוכן</h1>' +
       '<article class="report" aria-label="' + esc(data.doc.title) + '">' +
         '<header class="report__head">' + logo('is-done') +
@@ -323,11 +336,13 @@
 
     var locked = root.querySelector('[data-locked]');
     if (!st.unlocked) { locked.setAttribute('aria-hidden', 'true'); locked.setAttribute('inert', ''); }
-    on('[data-back]', 'click', function () { st.unlocked = false; askedScreen(false); });
     bindGate(c, s, parts);
   }
 
   /* ---------- leaving details opens the rest ---------- */
+  function validEmail(raw) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((raw || '').trim());
+  }
   function validPhone(raw) {
     var d = (raw || '').replace(/[\s\-()]/g, '');
     return /^05\d{8}$/.test(d) || /^\+9725\d{8}$/.test(d) || /^9725\d{8}$/.test(d);
@@ -355,7 +370,7 @@
       case_state: s.intake || 'UNSURE',
       full_name: st.name,
       phone_raw: st.phone,
-      email: '',
+      email: st.email,
       property_city: '',
       short_description: ('[העוזר] ' + c.label + ' | ' + s.label + ' | נעשה: ' + names(parts.done) +
         (parts.flags.length ? ' | לתשומת לב: ' + names(parts.flags) : '')).slice(0, 1000),
@@ -382,11 +397,12 @@
     var btn = form.querySelector('button[type="submit"]');
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var name = form.elements.full_name, phone = form.elements.phone_raw;
+      var name = form.elements.full_name, phone = form.elements.phone_raw, email = form.elements.email;
       var bad = null, msg = '';
       if (name.value.trim().length < 2) { bad = name; msg = 'צריך שם כדי לפתוח את המסמך.'; }
       else if (!validPhone(phone.value)) { bad = phone; msg = 'צריך מספר נייד מלא, למשל 050-1234567.'; }
-      [name, phone].forEach(function (el) { el.removeAttribute('aria-invalid'); });
+      else if (!validEmail(email.value)) { bad = email; msg = 'צריך כתובת אימייל מלאה, למשל name@gmail.com.'; }
+      [name, phone, email].forEach(function (el) { el.removeAttribute('aria-invalid'); });
       if (bad) {
         bad.setAttribute('aria-invalid', 'true');
         err.textContent = msg; err.hidden = false;
@@ -394,7 +410,7 @@
         return;
       }
       err.hidden = true;
-      st.name = name.value.trim(); st.phone = phone.value.trim();
+      st.name = name.value.trim(); st.phone = phone.value.trim(); st.email = email.value.trim();
       if (!st.leadId) { st.leadId = newLeadId(); }
       btn.disabled = true; btn.textContent = 'פותחים את המסמך…';
       var open = function () { st.unlocked = true; save(); unlock(c, s, parts); };

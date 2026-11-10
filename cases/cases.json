@@ -1,5 +1,5 @@
 {
-  "version": "2026-11-10.2",
+  "version": "2026-11-10.3",
   "status": "draft",
   "families": {
     "water":      { "label": "מים ורטיבות",       "color": "#3DB2D6" },
@@ -93,6 +93,7 @@
       "id": "roof", "family": "water", "icon": "roof", "intake": "WATER",
       "label": "חדירת מים מהגג", "short": "מים מהגג",
       "hook": "האיטום עוצר את המים. הנזק נשאר.",
+      "tip": "צלמו את הגג והמרזבים מבחוץ ביום יבש. כך אפשר לראות אם משהו נשבר או זז, ולא רק שיש רטיבות.",
       "states": [
         { "id": "active",   "stage": "now",      "icon": "clock",  "intake": "RECENT_DAMAGE", "label": "המים עדיין נכנסים",
           "next": "מתעדים את החדירה עם תאריך ושעה, ואת מצב הגג לפני שמתקנים." },
@@ -130,6 +131,7 @@
       "id": "fire", "family": "fire", "icon": "fire", "intake": "FIRE",
       "label": "שריפה", "short": "שריפה",
       "hook": "הפיח מגיע רחוק יותר מהאש.",
+      "tip": "שמרו קבלות על כל הוצאה מאז השריפה: לינה, ניקוי, הובלה. גם הוצאות זמניות הן חלק מהתמונה.",
       "safety": "נכנסים רק אחרי אישור כבאות.",
       "states": [
         { "id": "fresh",   "stage": "now",     "icon": "clock", "intake": "RECENT_DAMAGE", "label": "זה קרה בימים האחרונים",
@@ -167,6 +169,7 @@
       "id": "pipes", "family": "water", "icon": "pipe", "intake": "WATER",
       "label": "צנרת בדירה שלי", "short": "צנרת בדירה",
       "hook": "הצינור תוקן. הרטיבות עוד בקיר.",
+      "tip": "אם מחליפים צינור, בקשו מהשרברב לשמור את החלק הישן. הוא מראה איך הצינור נכשל.",
       "states": [
         { "id": "active",   "stage": "now",      "icon": "clock",  "intake": "RECENT_DAMAGE", "label": "הנזילה עדיין פעילה",
           "next": "קודם עוצרים את המים. לפני שסוגרים קיר או רצפה, מצלמים את הצינור החשוף." },
@@ -204,6 +207,7 @@
       "id": "structural", "family": "structure", "icon": "crack", "intake": "STRUCTURAL",
       "label": "סדקים בקיר", "short": "סדקים",
       "hook": "סדק שמולא כבר אי אפשר לבדוק.",
+      "tip": "סמנו בעיפרון את שני קצות הסדק וכתבו לידם תאריך. כך רואים אם הוא מתארך.",
       "safety": "סדק שמתרחב או דלת שנתקעת? קודם מהנדס.",
       "states": [
         { "id": "new",      "stage": "now",      "icon": "clock",  "intake": "RECENT_DAMAGE", "label": "הסדק הופיע לאחרונה",
@@ -241,6 +245,7 @@
       "id": "neighbor", "family": "water", "icon": "ceiling", "intake": "WATER",
       "label": "נזילה מהשכן שמעל", "short": "נזילה מהשכן",
       "hook": "הנזילה נעצרה. מי אחראי לנזק?",
+      "tip": "בקשו מהשכן בכתב את שם חברת הביטוח שלו ומספר הפוליסה.",
       "states": [
         { "id": "active",   "stage": "now",      "icon": "clock",  "intake": "RECENT_DAMAGE", "label": "המים עדיין יורדים",
           "next": "מודיעים לשכן בכתב ומצלמים את התקרה, עם תאריך." },
@@ -278,6 +283,7 @@
       "id": "burglary", "family": "burglary", "icon": "lock", "intake": "BURGLARY",
       "label": "פריצה", "short": "פריצה",
       "hook": "יש מה שנלקח, ויש מה שנשבר.",
+      "tip": "חפשו בטלפון תמונות ישנות שבהן רואים את מה שנלקח. גם תמונה משפחתית יכולה להראות שהפריט היה אצלכם.",
       "states": [
         { "id": "fresh",    "stage": "now",     "icon": "clock",  "intake": "RECENT_DAMAGE", "label": "זה קרה בימים האחרונים",
           "next": "לפני שמתקנים דלת או חלון, מצלמים את נקודת הפריצה." },
@@ -312,6 +318,7 @@
       "id": "business", "family": "commercial", "icon": "shop", "intake": "OTHER",
       "label": "נזק בעסק", "short": "נזק בעסק",
       "hook": "מבנה, ציוד, מלאי. מה שייך למי?",
+      "tip": "הוציאו עכשיו את נתוני ההכנסות מהחודשים שלפני האירוע. אובדן הכנסה מראים במסמכים, לא בהערכה.",
       "states": [
         { "id": "fresh",   "stage": "now",     "icon": "clock", "intake": "RECENT_DAMAGE", "label": "זה קרה בימים האחרונים",
           "next": "מצלמים מבנה, ציוד ומלאי בנפרד, לפני שמפנים." },
@@ -348,6 +355,7 @@
       "id": "shared", "family": "commercial", "icon": "building", "intake": "OTHER",
       "label": "רכוש משותף", "short": "רכוש משותף",
       "hook": "נזק אחד, כמה דירות. מי מתקן?",
+      "tip": "בקשו מהוועד או מחברת הניהול את פרטי ביטוח הבניין, אם יש כזה.",
       "states": [
         { "id": "active",  "stage": "now",     "icon": "clock",  "intake": "RECENT_DAMAGE", "label": "הנזק עדיין פעיל",
           "next": "מודיעים לוועד או לחברת הניהול בכתב, ומצלמים." },
@@ -384,6 +392,7 @@
       "id": "unsure", "family": "unsure", "icon": "question", "intake": "OTHER",
       "label": "עוד לא ברור", "short": "עוד לא ברור",
       "hook": "לא ברור מה קרה? מתחילים מתיעוד.",
+      "tip": "צלמו גם תמונה רחבה של החדר, לא רק מקרוב. כך רואים איפה בדיוק הנזק נמצא.",
       "states": [
         { "id": "now",      "stage": "now",      "icon": "clock",  "intake": "RECENT_DAMAGE", "label": "שמנו לב לזה עכשיו",
           "next": "מצלמים הכול כמו שהוא, לפני שמתקנים או זורקים." },

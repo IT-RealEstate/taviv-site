@@ -230,15 +230,18 @@
   // a touch or click on the building skips the clip
   hero.addEventListener('pointerdown', skipIntro);
 
+  // The arrival is the second half of the hero loop already on the site: from the
+  // three-quarter view at 10s back to the frontal frame at the end (the poster).
+  var ARRIVE_FROM = 10, RATE = 1.8;
   var started = false;
   function start() {
     if (started || settled) { return; }
     started = true;
     var media = PATHS.media || 'assets/media/';
-    var sources = [['webm', media + 'building-intro.webm'], ['mp4', media + 'building-intro.mp4']];
+    var sources = [['webm', media + 'building-loop.webm'], ['mp4', media + 'building-loop.mp4']];
     sources.forEach(function (pair, i) {
       var s = document.createElement('source');
-      s.src = pair[1];
+      s.src = pair[1] + '#t=' + ARRIVE_FROM;
       s.type = 'video/' + pair[0];
       // if the last source fails there is no clip: show the labels now
       if (i === sources.length - 1) { s.addEventListener('error', settle); }
@@ -246,12 +249,22 @@
     });
     video.preload = 'auto';
     video.muted = true;
+    video.defaultPlaybackRate = RATE;
+    video.addEventListener('loadedmetadata', function () {
+      if (video.currentTime < ARRIVE_FROM - 0.5) {
+        try { video.currentTime = ARRIVE_FROM; } catch (e) {}
+      }
+    });
+    video.addEventListener('playing', function () {
+      if (video.playbackRate !== RATE) { video.playbackRate = RATE; }
+    });
     video.addEventListener('ended', settle);
     video.addEventListener('error', settle);
     video.load();
     var played = video.play();
-    if (played && played.catch) { played.catch(settle); }
-    window.setTimeout(settle, 7500);
+    if (played && played.catch) { played.catch(skipIntro); }
+    // a slow connection must not leave the labels waiting, and labels never sit on a turned frame
+    window.setTimeout(skipIntro, 9000);
   }
 
   if (document.readyState === 'complete') { start(); }
