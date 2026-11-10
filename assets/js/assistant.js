@@ -367,11 +367,11 @@
       icon('whatsapp') + 'שליחת הסיכום בוואטסאפ</a>';
     // TAVIV APP takes over the signing and the uploads once its address is set in cases.json
     var app = N.appUrl ? '<a class="asst__go" href="' + esc(N.appUrl + (N.appUrl.indexOf('?') < 0 ? '?' : '&') + 'case=' + encodeURIComponent(c.id) + (st.leadId ? '&lead=' + encodeURIComponent(st.leadId) : '')) + '">' +
-      'חתימה על כתב מינוי והעלאת החומר' + icon('arrow') + '</a>' : '';
+      'העלאת תמונות ומסמכים' + icon('arrow') + '</a>' : '';
     return '<p class="gate__open" role="status">' + icon('tick') + 'המסמך פתוח. הפרטים התקבלו.</p>' +
       app + wa +
       '<p class="asst__note">' + (app ? 'הסיכום נשלח לטביב שמאות ונשאר אצלכם בשיחה.'
-        : 'ההודעה כבר כתובה, עם הפרטים שלכם ובקשה לכתב מינוי. היא נשלחת לטביב שמאות ונשארת אצלכם בשיחה.') + '</p>' +
+        : 'ההודעה כבר כתובה, עם הפרטים שלכם ובקשה לשיחה קצרה. היא נשלחת לטביב שמאות ונשארת אצלכם בשיחה.') + '</p>' +
       '<button type="button" class="asst__pdf" data-pdf>' + icon('doc') + 'הורדה כ־PDF</button>' +
       (c.guide ? '<a class="asst__guide" href="' + esc(c.guide.url) + '"><small>לקריאה בזמנכם</small>' + esc(c.guide.title) + '</a>' : '');
   }
