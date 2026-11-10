@@ -10,9 +10,16 @@
   var eventIdsSeen = {};
   var MAX_SEEN = 300;
 
+  // Microsoft Clarity: masking Strict and cookies off in the Clarity project settings.
+  // It loads only after the visitor agrees in the banner (privacy policy, section 16).
+  // The id is public (it appears in the page anyway); it is not a key.
+  var CLARITY_PROJECT_ID = 'zbeqvw0p4u';
+  var CONSENT_KEY = 'tv_measure_consent';
+  var CONSENT_VERSION = '2026-11-10.1';
+
   var FEATURE_FLAGS = {
     ga4: false,
-    clarity: false,
+    clarity: /^[a-z0-9]{6,16}$/.test(CLARITY_PROJECT_ID),
     google_ads: false
   };
   if (Object.freeze) Object.freeze(FEATURE_FLAGS);
@@ -21,6 +28,7 @@
     '/': 'home',
     '/damage/': 'damage',
     '/check/': 'check',
+    '/assistant/': 'assistant',
     '/legal/': 'legal',
     '/404.html': 'not_found'
   };
@@ -37,9 +45,14 @@
   ];
 
   var ENUMS = {
-    source_page: ['home', 'damage', 'check', 'legal', 'not_found'],
+    source_page: ['home', 'damage', 'check', 'assistant', 'legal', 'not_found'],
     landing_path: ['home', 'damage', 'check'],
-    cta_location: ['header', 'hero', 'mid', 'pricing', 'faq', 'closing', 'sticky_mobile', 'success'],
+    cta_location: ['header', 'hero', 'mid', 'pricing', 'faq', 'closing', 'sticky_mobile', 'success', 'assistant'],
+    // the assistant: which kind of damage, which general stage, which screen
+    damage_case: ['roof', 'fire', 'pipes', 'structural', 'neighbor', 'burglary', 'business', 'shared', 'unsure'],
+    case_stage: ['now', 'checked', 'returned', 'dispute'],
+    assistant_step: ['picker', 'state', 'asked', 'prep', 'document'],
+    done_count: ['0', '1', '2', '3', '4'],
     device_category: ['mobile', 'tablet', 'desktop'],
     viewport_bucket: ['xs_320_359', 'sm_360_389', 'md_390_767', 'lg_768_1023', 'xl_1024_plus'],
     section_id: [
@@ -73,11 +86,12 @@
     'cta_location', 'cta_id', 'faq_id', 'intake_step_id', 'field_id',
     'error_code', 'depth_percent', 'seconds_bucket', 'handoff_mode',
     'first_touch_source', 'last_touch_source', 'outbound_domain',
-    'service_interest', 'duplicate'
+    'service_interest', 'duplicate',
+    'damage_case', 'case_stage', 'assistant_step', 'done_count'
   ];
 
   var EVENTS = {
-    page_view: spec(['source_page', 'content_version', 'device_category', 'viewport_bucket'], [], ['home', 'damage', 'check', 'not_found'], true, ['source_page']),
+    page_view: spec(['source_page', 'content_version', 'device_category', 'viewport_bucket'], [], ['home', 'damage', 'check', 'assistant', 'not_found'], true, ['source_page']),
     landing_view: spec(['landing_path', 'first_touch_source'], ['content_version', 'page_variant'], ['home', 'damage', 'check'], true, ['landing_path']),
     section_view: spec(['source_page', 'section_id'], ['page_variant'], ['home', 'damage'], true, ['source_page', 'section_id']),
     navigation_click: spec(['source_page', 'section_id'], ['cta_location'], ['home', 'damage', 'check', 'legal'], false, ['source_page', 'section_id']),
@@ -88,7 +102,7 @@
     cta_view: spec(['source_page', 'cta_location', 'cta_id'], ['service_interest'], ['home', 'damage'], true, ['source_page', 'cta_id']),
     cta_click: spec(['source_page', 'cta_location', 'cta_id', 'event_id'], ['service_interest'], ['home', 'damage'], false, ['source_page', 'cta_id']),
     tel_click: spec(['source_page', 'cta_location', 'event_id'], [], ['home', 'damage', 'check', 'legal', 'not_found'], false, ['source_page', 'cta_location']),
-    whatsapp_click: spec(['source_page', 'cta_location', 'event_id'], ['handoff_mode'], ['home', 'damage', 'check'], false, ['source_page', 'cta_location', 'handoff_mode']),
+    whatsapp_click: spec(['source_page', 'cta_location', 'event_id'], ['handoff_mode'], ['home', 'damage', 'check', 'assistant'], false, ['source_page', 'cta_location', 'handoff_mode']),
     intake_view: spec(['source_page'], ['first_touch_source'], ['check'], true, ['source_page']),
     intake_start: spec(['source_page', 'intake_step_id', 'event_id'], ['device_category', 'viewport_bucket'], ['check'], true, ['source_page']),
     intake_step_view: spec(['intake_step_id'], ['source_page'], ['check'], true, ['intake_step_id']),
@@ -96,7 +110,13 @@
     intake_validation_error: spec(['intake_step_id', 'field_id', 'error_code'], ['source_page', 'device_category'], ['check'], false, ['intake_step_id', 'field_id', 'error_code']),
     intake_submit_attempt: spec(['event_id', 'source_page'], ['intake_step_id'], ['check'], false, ['event_id']),
     intake_submit_success: spec(['event_id', 'source_page'], ['duplicate'], ['check'], true, ['event_id']),
-    intake_submit_error: spec(['event_id', 'error_code'], ['source_page', 'intake_step_id'], ['check'], false, ['event_id', 'error_code'])
+    intake_submit_error: spec(['event_id', 'error_code'], ['source_page', 'intake_step_id'], ['check'], false, ['event_id', 'error_code']),
+    // the assistant funnel: screen → document → details → open. No names, phones or free text.
+    assistant_step_view: spec(['assistant_step'], ['damage_case', 'case_stage'], ['assistant'], true, ['assistant_step']),
+    assistant_gate_error: spec(['field_id', 'error_code'], [], ['assistant'], false, ['field_id', 'error_code']),
+    assistant_gate_submit: spec(['event_id', 'damage_case', 'case_stage'], ['done_count'], ['assistant'], false, ['event_id']),
+    assistant_unlock: spec(['damage_case', 'case_stage'], ['done_count'], ['assistant'], true, ['damage_case', 'case_stage']),
+    assistant_pdf: spec(['source_page'], ['damage_case'], ['assistant'], false, ['source_page'])
   };
 
   function spec(required, optional, routes, once, signature) {
@@ -233,10 +253,82 @@
       }
 
       if (TEST_MODE) TEST_EVENTS.push(JSON.parse(JSON.stringify(event)));
+      send(name, event);
       return true;
     } catch (e) {
       return false;
     }
+  }
+
+  // the only place an event leaves the browser; nothing is sent while every flag is off
+  function send(name, event) {
+    if (!FEATURE_FLAGS.clarity || TEST_MODE || !consented() || typeof window.clarity !== 'function') return;
+    try {
+      window.clarity('event', name);
+      var tags = ['source_page', 'damage_case', 'case_stage', 'assistant_step', 'cta_location', 'device_category'];
+      for (var i = 0; i < tags.length; i++) {
+        if (own(event, tags[i])) window.clarity('set', tags[i], String(event[tags[i]]));
+      }
+    } catch (e) {}
+  }
+
+  /* ---------- consent: nothing is measured before "מאשרים" ---------- */
+  function readConsent() {
+    try {
+      var v = JSON.parse(window.localStorage.getItem(CONSENT_KEY) || 'null');
+      return v && v.v === CONSENT_VERSION ? v.c : '';
+    } catch (e) { return ''; }
+  }
+  function writeConsent(choice) {
+    try { window.localStorage.setItem(CONSENT_KEY, JSON.stringify({ v: CONSENT_VERSION, c: choice })); } catch (e) {}
+  }
+  function consented() { return readConsent() === 'yes'; }
+
+  function consentBanner() {
+    if (!FEATURE_FLAGS.clarity || TEST_MODE || readConsent() || document.getElementById('tv-consent')) return;
+    var box = document.createElement('div');
+    box.id = 'tv-consent';
+    box.setAttribute('role', 'region');
+    box.setAttribute('aria-label', 'הסכמה למדידת שימוש');
+    box.setAttribute('dir', 'rtl');
+    box.style.cssText = 'position:fixed;inset-inline:0;bottom:0;z-index:2147483000;display:flex;justify-content:center;' +
+      'padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#1A2024;border-top:1px solid #1F8EB1;' +
+      'box-shadow:0 -6px 24px rgba(0,0,0,.45);font-family:inherit;color:#ECEEEF;';
+    var btn = 'min-height:44px;padding:0 18px;border-radius:22px;font:inherit;font-size:15px;font-weight:600;cursor:pointer;';
+    box.innerHTML = '<div style="width:100%;max-width:520px;display:grid;gap:10px">' +
+      '<p style="margin:0;font-size:14.5px;line-height:1.45">אפשר לראות איך משתמשים באתר, כדי לשפר אותו? ' +
+      'בלי טקסט שהקלדתם ובלי עוגיות. <a href="/legal/#s16" style="color:#ECEEEF;text-decoration:underline">פרטים</a></p>' +
+      '<div style="display:flex;gap:10px">' +
+      '<button type="button" data-consent="yes" style="' + btn + 'flex:1;border:0;background:#1F8EB1;color:#080A0C">מאשרים</button>' +
+      '<button type="button" data-consent="no" style="' + btn + 'flex:1;border:1px solid #A7AFB5;background:none;color:#ECEEEF">לא תודה</button>' +
+      '</div></div>';
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-consent]');
+      if (!b) return;
+      var choice = b.getAttribute('data-consent');
+      writeConsent(choice);
+      box.parentNode.removeChild(box);
+      if (choice === 'yes') loadClarity();
+    });
+    document.body.appendChild(box);
+  }
+  function bindConsentReset() {
+    var nodes = document.querySelectorAll('[data-consent-reset]');
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].addEventListener('click', function () {
+        try { window.localStorage.removeItem(CONSENT_KEY); } catch (e) {}
+        consentBanner();
+      });
+    }
+  }
+
+  function loadClarity() {
+    if (!FEATURE_FLAGS.clarity || TEST_MODE || !consented() || typeof window.clarity === 'function') return;
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+      t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i;
+      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    })(window, document, 'clarity', 'script', CLARITY_PROJECT_ID);
   }
 
   function normalizeCtaLocation(value) {
@@ -374,8 +466,11 @@
     };
   }
 
+  loadClarity();
+  if (document.body) { consentBanner(); bindConsentReset(); }
+  else { document.addEventListener('DOMContentLoaded', function () { consentBanner(); bindConsentReset(); }); }
   var page = currentPage();
-  if (page === 'home' || page === 'damage' || page === 'check' || page === 'not_found') {
+  if (page === 'home' || page === 'damage' || page === 'check' || page === 'assistant' || page === 'not_found') {
     trackEvent('page_view', {});
   }
   bindMarketingEvents();

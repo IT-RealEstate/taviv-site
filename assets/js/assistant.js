@@ -13,13 +13,27 @@
   var DEMO = !!PATHS.demo;
   var cfg = window.INTAKE_CONFIG || {};
   var WA_NUMBER = cfg.whatsappNumber || '972552617625';
-  var LEGAL_RELEASE = '2026-09-04.1';          // same notice the /check/ form shows
+  var LEGAL_RELEASE = '2026-11-10.1';          // same notice the /check/ form shows
   var STORE_KEY = 'tv_asst';
   var icon = window.TAVIV_ICON || function () { return ''; };
   var logo = window.TAVIV_LOGO || function () { return ''; };
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var timers = [];
   function clearTimers() { timers.forEach(function (t) { window.clearTimeout(t); }); timers = []; }
+
+  // counts only: which screen, which kind of damage, which stage. Never names, phones or text.
+  function measure(name, params) {
+    var M = window.TAVIV_MEASUREMENT;
+    if (DEMO || !M || typeof M.trackEvent !== 'function') { return; }
+    M.trackEvent(name, params || {});
+  }
+  function where(extra) {
+    var c = data && theCase(), s = data && theState(), out = {};
+    if (c) { out.damage_case = c.id; }
+    if (s) { out.case_stage = s.stage; } else if (st.stage) { out.case_stage = st.stage; }
+    for (var k in extra) { if (Object.prototype.hasOwnProperty.call(extra, k)) { out[k] = extra[k]; } }
+    return out;
+  }
 
   var params = {};
   location.search.replace(/^\?/, '').split('&').forEach(function (kv) {
@@ -125,6 +139,7 @@
       '<div class="asst__brand">' + logo() + '<p class="asst__eyebrow">העוזר של טביב שמאות</p></div>' +
       '<h1 class="asst__h">היכן הופיע הנזק?</h1>' +
       '<div class="choices choices--grid">' + tiles + '</div>');
+    measure('assistant_step_view', { assistant_step: 'picker' });
     on('[data-case]', 'click', function (b) {
       st.caseId = b.getAttribute('data-case'); st.stateId = ''; st.done = {}; st.unlocked = false;
       start();
@@ -155,6 +170,7 @@
       (c.safety ? '<p class="asst__safety" role="note">' + icon('alert') + '<span>' + esc(c.safety) + '</span></p>' : '') +
       '<div class="choices">' + opts + '</div>' +
       '<button type="button" class="asst__alt" data-pick>זה לא הנזק שלי</button>', famColor(c));
+    measure('assistant_step_view', where({ assistant_step: 'state' }));
     on('[data-state]', 'click', function (b) { st.stateId = b.getAttribute('data-state'); askedScreen(false); });
     on('[data-pick]', 'click', goHome);
   }
@@ -176,6 +192,7 @@
       '<ul class="asst__ticks">' + items + '</ul>' +
       '<button type="button" class="asst__go" data-next>הכינו לי את המסמך' + icon('arrow') + '</button>',
       famColor(c));
+    measure('assistant_step_view', where({ assistant_step: 'asked' }));
     on('[data-ask]', 'click', function (b) {
       var id = b.getAttribute('data-ask');
       st.done[id] = !st.done[id];
@@ -218,6 +235,7 @@
       '<ul class="prep__list">' + lines.map(function (l) {
         return '<li class="prep__item"><span class="prep__mark">' + icon('tick') + '</span><span>' + l + '</span></li>';
       }).join('') + '</ul>' + tip + '</div>', famColor(c));
+    measure('assistant_step_view', where({ assistant_step: 'prep' }));
 
     var items = root.querySelectorAll('.prep__item');
     var tipEl = root.querySelector('[data-tip]');
@@ -311,11 +329,12 @@
     }
     html += timelineHtml(s);
     html += '<section class="report__block"><h2 class="report__label">' + icon('check') + esc(T.appraiser) + '</h2>' +
+      // the whole case, handled on their behalf; the same for every kind of damage
       (data.doc.appraiserLead ? '<p class="report__lead">' + esc(data.doc.appraiserLead) + '</p>' : '') +
-      '<ul class="report__list is-fam">' + c.doc.appraiser.slice(0, 3).map(function (t) {
+      '<ul class="report__list is-fam">' + (data.doc.appraiserSteps || []).slice(0, 3).map(function (t) {
         return '<li>' + icon('tick') + '<span>' + esc(t) + '</span></li>';
       }).join('') + '</ul>' +
-      (data.doc.appraiserNote ? '<p class="report__text is-dim">' + esc(data.doc.appraiserNote) + '</p>' : '') + '</section>';
+      (data.doc.appraiserContrast ? '<p class="report__text is-dim">' + esc(data.doc.appraiserContrast) + '</p>' : '') + '</section>';
     return html + nextHtml(parts);
   }
 
@@ -348,11 +367,11 @@
       icon('whatsapp') + 'שליחת הסיכום בוואטסאפ</a>';
     // TAVIV APP takes over the signing and the uploads once its address is set in cases.json
     var app = N.appUrl ? '<a class="asst__go" href="' + esc(N.appUrl + (N.appUrl.indexOf('?') < 0 ? '?' : '&') + 'case=' + encodeURIComponent(c.id) + (st.leadId ? '&lead=' + encodeURIComponent(st.leadId) : '')) + '">' +
-      'חתימה על כתב מינוי והעלאת החומר' + icon('arrow') + '</a>' : '';
+      'העלאת תמונות ומסמכים' + icon('arrow') + '</a>' : '';
     return '<p class="gate__open" role="status">' + icon('tick') + 'המסמך פתוח. הפרטים התקבלו.</p>' +
       app + wa +
       '<p class="asst__note">' + (app ? 'הסיכום נשלח לטביב שמאות ונשאר אצלכם בשיחה.'
-        : 'ההודעה כבר כתובה, עם הפרטים שלכם ובקשה לכתב מינוי. היא נשלחת לטביב שמאות ונשארת אצלכם בשיחה.') + '</p>' +
+        : 'ההודעה כבר כתובה, עם הפרטים שלכם ובקשה לשיחה קצרה. היא נשלחת לטביב שמאות ונשארת אצלכם בשיחה.') + '</p>' +
       '<button type="button" class="asst__pdf" data-pdf>' + icon('doc') + 'הורדה כ־PDF</button>' +
       (c.guide ? '<a class="asst__guide" href="' + esc(c.guide.url) + '"><small>לקריאה בזמנכם</small>' + esc(c.guide.title) + '</a>' : '');
   }
@@ -387,6 +406,7 @@
         '<a href="' + esc(PATHS.legal || '/legal/') + '">מדיניות פרטיות ותנאי שימוש</a></p>',
       famColor(c));
 
+    measure('assistant_step_view', where({ assistant_step: 'document' }));
     var locked = root.querySelector('[data-locked]');
     if (!st.unlocked) { locked.setAttribute('aria-hidden', 'true'); locked.setAttribute('inert', ''); }
     bindGate(c, s, parts);
@@ -457,6 +477,7 @@
       else if (!validEmail(email.value)) { bad = email; msg = 'צריך כתובת אימייל מלאה, למשל name@gmail.com.'; }
       [name, phone, email].forEach(function (el) { el.removeAttribute('aria-invalid'); });
       if (bad) {
+        measure('assistant_gate_error', { field_id: bad.name, error_code: bad.value.trim() ? 'invalid_format' : 'required' });
         bad.setAttribute('aria-invalid', 'true');
         err.textContent = msg; err.hidden = false;
         bad.focus();
@@ -466,7 +487,9 @@
       st.name = name.value.trim(); st.phone = phone.value.trim(); st.email = email.value.trim();
       if (!st.leadId) { st.leadId = newLeadId(); }
       btn.disabled = true; btn.textContent = 'פותחים את המסמך…';
-      var open = function () { st.unlocked = true; save(); unlock(c, s, parts); };
+      var done = String(Math.min(parts.done.length, 4));
+      measure('assistant_gate_submit', where({ done_count: done }));
+      var open = function () { st.unlocked = true; save(); unlock(c, s, parts); measure('assistant_unlock', where({ done_count: done })); };
       // the visitor did their part: the document opens even if saving fails,
       // and the WhatsApp message carries the same details
       sendLead(c, s, parts, form.elements.website.value).then(open, open);
@@ -500,7 +523,9 @@
   }
   root.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-pdf]');
-    if (b && st.unlocked) { printDoc(); }
+    if (b && st.unlocked) { measure('assistant_pdf', where({})); printDoc(); }
+    var w = e.target.closest && e.target.closest('.asst__go--wa');
+    if (w) { measure('whatsapp_click', { cta_location: 'assistant', handoff_mode: 'generic_whatsapp' }); }
   });
 
   fetch(CASES_URL).then(function (r) { return r.json(); }).then(function (json) {
