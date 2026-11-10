@@ -11,6 +11,8 @@ window.INTAKE_CONFIG = {
   // Parallel hand-off to Taviv App. Runs next to the Apps Script save above, never instead
   // of it. 'off' disables it without touching anything else.
   appHandoff: 'on',
+  // 'on' needs taviv-app#334 live (app stores the LD-<64 hex> website id); 'off' omits it.
+  appLongLeadRef: 'on',
   appOrigin: 'https://app.taviv.co.il',
   appLeadsUrl: 'https://app.taviv.co.il/api/public/leads',
   appEnrichmentUrl: 'https://app.taviv.co.il/api/public/leads/enrichment'

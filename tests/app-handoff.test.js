@@ -40,7 +40,7 @@ function load({ responses = [], config = {} } = {}) {
 const PAYLOAD = { lead_id: 'LD-' + 'a'.repeat(64), client_marker: 'taviv-web-1', full_name: 'Test', phone_raw: '0521234567', email: '' };
 const GOOD = { ok: true, destination: 'https://app.taviv.co.il/start?h=opaque123', enrichment_token: 'tok' };
 
-test('create posts JSON with an Idempotency-Key and drops the long LD- id', async () => {
+test('create posts JSON with an Idempotency-Key and sends the long LD- website id', async () => {
   const { api, calls } = load({ responses: [{ json: GOOD }] });
   assert.equal(await api.create(PAYLOAD), true);
   assert.equal(calls.length, 1);
@@ -48,8 +48,17 @@ test('create posts JSON with an Idempotency-Key and drops the long LD- id', asyn
   assert.equal(calls[0].init.headers['Content-Type'], 'application/json');
   assert.match(calls[0].init.headers['Idempotency-Key'], /^[0-9a-f-]{36}$/);
   assert.equal(calls[0].init.credentials, 'omit');
-  assert.equal('lead_id' in calls[0].body, false);
+  assert.equal(calls[0].body.lead_id, PAYLOAD.lead_id);
   assert.equal(api.destination(), GOOD.destination);
+});
+
+test('the long LD- id is omitted when appLongLeadRef is off; malformed refs are never sent', async () => {
+  const off = load({ responses: [{ json: GOOD }], config: { appLongLeadRef: 'off' } });
+  await off.api.create(PAYLOAD);
+  assert.equal('lead_id' in off.calls[0].body, false);
+  const bad = load({ responses: [{ json: GOOD }] });
+  await bad.api.create(Object.assign({}, PAYLOAD, { lead_id: 'LD-' + 'A'.repeat(64) }));
+  assert.equal('lead_id' in bad.calls[0].body, false);
 });
 
 test('a short legacy LD- ref is kept', async () => {
@@ -103,7 +112,7 @@ test('enrichment sends only contract fields with the capability header and a new
   assert.equal(e.url, 'https://app.taviv.co.il/api/public/leads/enrichment');
   assert.equal(e.init.headers['Lead-Enrichment'], 'tok');
   assert.notEqual(e.init.headers['Idempotency-Key'], calls[0].init.headers['Idempotency-Key']);
-  assert.deepEqual(e.body, { client_marker: 'taviv-web-1', damage_type: 'WATER' });
+  assert.deepEqual(e.body, { client_marker: 'taviv-web-1', lead_id: PAYLOAD.lead_id, damage_type: 'WATER' });
 });
 
 test('no enrichment when create never succeeded', async () => {

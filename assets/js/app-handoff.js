@@ -22,16 +22,21 @@ window.TAVIV_APP_HANDOFF = (function () {
   var ENRICH_FIELDS = ['client_marker', 'lead_id', 'full_name', 'phone_raw', 'email',
     'damage_type', 'case_state', 'property_city', 'short_description'];
 
-  // The app accepts only the short legacy ref shape (LD- + 5 chars). The site's current
-  // LD-<64 hex> id would be rejected by the app's strict schema, so it is omitted (the field
-  // is optional and never identity/auth on the app side).
-  var APP_LEAD_REF = /^LD-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}$/;
+  // The site's LD-<64 hex> id is sent so the app can store it and the CRM can match the
+  // website row (taviv-app#334 widens the app schema). Until #334 is live, set
+  // appLongLeadRef: 'off' in intake-config.js and only the short legacy ref is sent.
+  var SHORT_LEAD_REF = /^LD-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}$/;
+  var LONG_LEAD_REF = /^LD-[0-9a-f]{64}$/;
+  function appAcceptsRef(v) {
+    v = String(v);
+    return SHORT_LEAD_REF.test(v) || (cfg().appLongLeadRef !== 'off' && LONG_LEAD_REF.test(v));
+  }
 
   function withAppLeadRef(payload) {
     var out = {};
     for (var k in payload) {
       if (!Object.prototype.hasOwnProperty.call(payload, k)) continue;
-      if (k === 'lead_id' && !APP_LEAD_REF.test(String(payload[k]))) continue;
+      if (k === 'lead_id' && !appAcceptsRef(payload[k])) continue;
       out[k] = payload[k];
     }
     return out;
@@ -156,7 +161,7 @@ window.TAVIV_APP_HANDOFF = (function () {
         if (name === 'client_marker') return;
         var v = payload[name];
         if (typeof v !== 'string' || v === '') return;
-        if (name === 'lead_id' && !APP_LEAD_REF.test(v)) return;
+        if (name === 'lead_id' && !appAcceptsRef(v)) return;
         body[name] = v;
         if (name !== 'lead_id') updatable += 1;
       });
