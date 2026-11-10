@@ -21,6 +21,20 @@
   var timers = [];
   function clearTimers() { timers.forEach(function (t) { window.clearTimeout(t); }); timers = []; }
 
+  // counts only: which screen, which kind of damage, which stage. Never names, phones or text.
+  function measure(name, params) {
+    var M = window.TAVIV_MEASUREMENT;
+    if (DEMO || !M || typeof M.trackEvent !== 'function') { return; }
+    M.trackEvent(name, params || {});
+  }
+  function where(extra) {
+    var c = data && theCase(), s = data && theState(), out = {};
+    if (c) { out.damage_case = c.id; }
+    if (s) { out.case_stage = s.stage; } else if (st.stage) { out.case_stage = st.stage; }
+    for (var k in extra) { if (Object.prototype.hasOwnProperty.call(extra, k)) { out[k] = extra[k]; } }
+    return out;
+  }
+
   var params = {};
   location.search.replace(/^\?/, '').split('&').forEach(function (kv) {
     if (!kv) { return; }
@@ -125,6 +139,7 @@
       '<div class="asst__brand">' + logo() + '<p class="asst__eyebrow">העוזר של טביב שמאות</p></div>' +
       '<h1 class="asst__h">היכן הופיע הנזק?</h1>' +
       '<div class="choices choices--grid">' + tiles + '</div>');
+    measure('assistant_step_view', { assistant_step: 'picker' });
     on('[data-case]', 'click', function (b) {
       st.caseId = b.getAttribute('data-case'); st.stateId = ''; st.done = {}; st.unlocked = false;
       start();
@@ -155,6 +170,7 @@
       (c.safety ? '<p class="asst__safety" role="note">' + icon('alert') + '<span>' + esc(c.safety) + '</span></p>' : '') +
       '<div class="choices">' + opts + '</div>' +
       '<button type="button" class="asst__alt" data-pick>זה לא הנזק שלי</button>', famColor(c));
+    measure('assistant_step_view', where({ assistant_step: 'state' }));
     on('[data-state]', 'click', function (b) { st.stateId = b.getAttribute('data-state'); askedScreen(false); });
     on('[data-pick]', 'click', goHome);
   }
@@ -176,6 +192,7 @@
       '<ul class="asst__ticks">' + items + '</ul>' +
       '<button type="button" class="asst__go" data-next>הכינו לי את המסמך' + icon('arrow') + '</button>',
       famColor(c));
+    measure('assistant_step_view', where({ assistant_step: 'asked' }));
     on('[data-ask]', 'click', function (b) {
       var id = b.getAttribute('data-ask');
       st.done[id] = !st.done[id];
@@ -218,6 +235,7 @@
       '<ul class="prep__list">' + lines.map(function (l) {
         return '<li class="prep__item"><span class="prep__mark">' + icon('tick') + '</span><span>' + l + '</span></li>';
       }).join('') + '</ul>' + tip + '</div>', famColor(c));
+    measure('assistant_step_view', where({ assistant_step: 'prep' }));
 
     var items = root.querySelectorAll('.prep__item');
     var tipEl = root.querySelector('[data-tip]');
@@ -388,6 +406,7 @@
         '<a href="' + esc(PATHS.legal || '/legal/') + '">מדיניות פרטיות ותנאי שימוש</a></p>',
       famColor(c));
 
+    measure('assistant_step_view', where({ assistant_step: 'document' }));
     var locked = root.querySelector('[data-locked]');
     if (!st.unlocked) { locked.setAttribute('aria-hidden', 'true'); locked.setAttribute('inert', ''); }
     bindGate(c, s, parts);
@@ -458,6 +477,7 @@
       else if (!validEmail(email.value)) { bad = email; msg = 'צריך כתובת אימייל מלאה, למשל name@gmail.com.'; }
       [name, phone, email].forEach(function (el) { el.removeAttribute('aria-invalid'); });
       if (bad) {
+        measure('assistant_gate_error', { field_id: bad.name, error_code: bad.value.trim() ? 'invalid_format' : 'required' });
         bad.setAttribute('aria-invalid', 'true');
         err.textContent = msg; err.hidden = false;
         bad.focus();
@@ -467,7 +487,9 @@
       st.name = name.value.trim(); st.phone = phone.value.trim(); st.email = email.value.trim();
       if (!st.leadId) { st.leadId = newLeadId(); }
       btn.disabled = true; btn.textContent = 'פותחים את המסמך…';
-      var open = function () { st.unlocked = true; save(); unlock(c, s, parts); };
+      var done = String(Math.min(parts.done.length, 4));
+      measure('assistant_gate_submit', where({ done_count: done }));
+      var open = function () { st.unlocked = true; save(); unlock(c, s, parts); measure('assistant_unlock', where({ done_count: done })); };
       // the visitor did their part: the document opens even if saving fails,
       // and the WhatsApp message carries the same details
       sendLead(c, s, parts, form.elements.website.value).then(open, open);
@@ -501,7 +523,9 @@
   }
   root.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-pdf]');
-    if (b && st.unlocked) { printDoc(); }
+    if (b && st.unlocked) { measure('assistant_pdf', where({})); printDoc(); }
+    var w = e.target.closest && e.target.closest('.asst__go--wa');
+    if (w) { measure('whatsapp_click', { cta_location: 'assistant', handoff_mode: 'generic_whatsapp' }); }
   });
 
   fetch(CASES_URL).then(function (r) { return r.json(); }).then(function (json) {

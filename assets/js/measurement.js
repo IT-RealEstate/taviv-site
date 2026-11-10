@@ -10,9 +10,13 @@
   var eventIdsSeen = {};
   var MAX_SEEN = 300;
 
+  // Microsoft Clarity stays off until a project id is set here AND the privacy policy says so.
+  // The id is public (it appears in the page anyway); it is not a key.
+  var CLARITY_PROJECT_ID = '';
+
   var FEATURE_FLAGS = {
     ga4: false,
-    clarity: false,
+    clarity: /^[a-z0-9]{6,16}$/.test(CLARITY_PROJECT_ID),
     google_ads: false
   };
   if (Object.freeze) Object.freeze(FEATURE_FLAGS);
@@ -21,6 +25,7 @@
     '/': 'home',
     '/damage/': 'damage',
     '/check/': 'check',
+    '/assistant/': 'assistant',
     '/legal/': 'legal',
     '/404.html': 'not_found'
   };
@@ -37,9 +42,14 @@
   ];
 
   var ENUMS = {
-    source_page: ['home', 'damage', 'check', 'legal', 'not_found'],
+    source_page: ['home', 'damage', 'check', 'assistant', 'legal', 'not_found'],
     landing_path: ['home', 'damage', 'check'],
-    cta_location: ['header', 'hero', 'mid', 'pricing', 'faq', 'closing', 'sticky_mobile', 'success'],
+    cta_location: ['header', 'hero', 'mid', 'pricing', 'faq', 'closing', 'sticky_mobile', 'success', 'assistant'],
+    // the assistant: which kind of damage, which general stage, which screen
+    damage_case: ['roof', 'fire', 'pipes', 'structural', 'neighbor', 'burglary', 'business', 'shared', 'unsure'],
+    case_stage: ['now', 'checked', 'returned', 'dispute'],
+    assistant_step: ['picker', 'state', 'asked', 'prep', 'document'],
+    done_count: ['0', '1', '2', '3', '4'],
     device_category: ['mobile', 'tablet', 'desktop'],
     viewport_bucket: ['xs_320_359', 'sm_360_389', 'md_390_767', 'lg_768_1023', 'xl_1024_plus'],
     section_id: [
@@ -73,11 +83,12 @@
     'cta_location', 'cta_id', 'faq_id', 'intake_step_id', 'field_id',
     'error_code', 'depth_percent', 'seconds_bucket', 'handoff_mode',
     'first_touch_source', 'last_touch_source', 'outbound_domain',
-    'service_interest', 'duplicate'
+    'service_interest', 'duplicate',
+    'damage_case', 'case_stage', 'assistant_step', 'done_count'
   ];
 
   var EVENTS = {
-    page_view: spec(['source_page', 'content_version', 'device_category', 'viewport_bucket'], [], ['home', 'damage', 'check', 'not_found'], true, ['source_page']),
+    page_view: spec(['source_page', 'content_version', 'device_category', 'viewport_bucket'], [], ['home', 'damage', 'check', 'assistant', 'not_found'], true, ['source_page']),
     landing_view: spec(['landing_path', 'first_touch_source'], ['content_version', 'page_variant'], ['home', 'damage', 'check'], true, ['landing_path']),
     section_view: spec(['source_page', 'section_id'], ['page_variant'], ['home', 'damage'], true, ['source_page', 'section_id']),
     navigation_click: spec(['source_page', 'section_id'], ['cta_location'], ['home', 'damage', 'check', 'legal'], false, ['source_page', 'section_id']),
@@ -88,7 +99,7 @@
     cta_view: spec(['source_page', 'cta_location', 'cta_id'], ['service_interest'], ['home', 'damage'], true, ['source_page', 'cta_id']),
     cta_click: spec(['source_page', 'cta_location', 'cta_id', 'event_id'], ['service_interest'], ['home', 'damage'], false, ['source_page', 'cta_id']),
     tel_click: spec(['source_page', 'cta_location', 'event_id'], [], ['home', 'damage', 'check', 'legal', 'not_found'], false, ['source_page', 'cta_location']),
-    whatsapp_click: spec(['source_page', 'cta_location', 'event_id'], ['handoff_mode'], ['home', 'damage', 'check'], false, ['source_page', 'cta_location', 'handoff_mode']),
+    whatsapp_click: spec(['source_page', 'cta_location', 'event_id'], ['handoff_mode'], ['home', 'damage', 'check', 'assistant'], false, ['source_page', 'cta_location', 'handoff_mode']),
     intake_view: spec(['source_page'], ['first_touch_source'], ['check'], true, ['source_page']),
     intake_start: spec(['source_page', 'intake_step_id', 'event_id'], ['device_category', 'viewport_bucket'], ['check'], true, ['source_page']),
     intake_step_view: spec(['intake_step_id'], ['source_page'], ['check'], true, ['intake_step_id']),
@@ -96,7 +107,13 @@
     intake_validation_error: spec(['intake_step_id', 'field_id', 'error_code'], ['source_page', 'device_category'], ['check'], false, ['intake_step_id', 'field_id', 'error_code']),
     intake_submit_attempt: spec(['event_id', 'source_page'], ['intake_step_id'], ['check'], false, ['event_id']),
     intake_submit_success: spec(['event_id', 'source_page'], ['duplicate'], ['check'], true, ['event_id']),
-    intake_submit_error: spec(['event_id', 'error_code'], ['source_page', 'intake_step_id'], ['check'], false, ['event_id', 'error_code'])
+    intake_submit_error: spec(['event_id', 'error_code'], ['source_page', 'intake_step_id'], ['check'], false, ['event_id', 'error_code']),
+    // the assistant funnel: screen → document → details → open. No names, phones or free text.
+    assistant_step_view: spec(['assistant_step'], ['damage_case', 'case_stage'], ['assistant'], true, ['assistant_step']),
+    assistant_gate_error: spec(['field_id', 'error_code'], [], ['assistant'], false, ['field_id', 'error_code']),
+    assistant_gate_submit: spec(['event_id', 'damage_case', 'case_stage'], ['done_count'], ['assistant'], false, ['event_id']),
+    assistant_unlock: spec(['damage_case', 'case_stage'], ['done_count'], ['assistant'], true, ['damage_case', 'case_stage']),
+    assistant_pdf: spec(['source_page'], ['damage_case'], ['assistant'], false, ['source_page'])
   };
 
   function spec(required, optional, routes, once, signature) {
@@ -233,10 +250,32 @@
       }
 
       if (TEST_MODE) TEST_EVENTS.push(JSON.parse(JSON.stringify(event)));
+      send(name, event);
       return true;
     } catch (e) {
       return false;
     }
+  }
+
+  // the only place an event leaves the browser; nothing is sent while every flag is off
+  function send(name, event) {
+    if (!FEATURE_FLAGS.clarity || TEST_MODE || typeof window.clarity !== 'function') return;
+    try {
+      window.clarity('event', name);
+      var tags = ['source_page', 'damage_case', 'case_stage', 'assistant_step', 'cta_location', 'device_category'];
+      for (var i = 0; i < tags.length; i++) {
+        if (own(event, tags[i])) window.clarity('set', tags[i], String(event[tags[i]]));
+      }
+    } catch (e) {}
+  }
+
+  function loadClarity() {
+    if (!FEATURE_FLAGS.clarity || TEST_MODE) return;
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+      t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i;
+      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    })(window, document, 'clarity', 'script', CLARITY_PROJECT_ID);
   }
 
   function normalizeCtaLocation(value) {
@@ -374,8 +413,9 @@
     };
   }
 
+  loadClarity();
   var page = currentPage();
-  if (page === 'home' || page === 'damage' || page === 'check' || page === 'not_found') {
+  if (page === 'home' || page === 'damage' || page === 'check' || page === 'assistant' || page === 'not_found') {
     trackEvent('page_view', {});
   }
   bindMarketingEvents();
