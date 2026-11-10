@@ -506,3 +506,107 @@ h2.report__label:focus { outline: 0; }
 .prep__tip-label .ti { width: 16px; height: 16px; }
 .prep__tip-text { margin: 6px 0 0; font-size: 16px; line-height: 1.45; color: var(--text-primary); }
 @media (prefers-reduced-motion: reduce) { .prep__tip { transition: none; transform: none; } }
+
+/* ---------- the document: process, law, what is needed ---------- */
+.steps { display: grid; gap: 0; margin: 2px 0 10px; padding: 0; list-style: none; }
+.steps__item { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: 12px; padding-block: 0 14px; }
+.steps__item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 13px;
+  top: 28px;
+  bottom: 0;
+  width: 2px;
+  background: var(--hairline-dark);
+}
+.steps__n {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--hairline-dark);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.steps__body { display: grid; gap: 2px; font-size: 15px; line-height: 1.4; }
+.steps__body b { font-weight: 500; color: var(--text-primary); }
+.steps__body > span { color: var(--text-secondary); }
+.steps__here {
+  justify-self: start;
+  margin-block: 2px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--fam);
+  color: #080A0C;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+}
+.steps__item.is-here .steps__n { border-color: var(--fam); background: var(--fam); color: #080A0C; }
+
+.law { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.law__row { display: grid; grid-template-columns: 64px minmax(0, 1fr); column-gap: 12px; padding-block: 10px; }
+.law__row + .law__row { border-block-start: 1px solid var(--hairline-dark); }
+.law__when { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-block-start: 2px; color: var(--fam); line-height: 1.1; }
+.law__when b { font-size: 22px; font-weight: 600; }
+.law__when small { margin-block-start: 2px; font-size: 11.500px; color: var(--text-secondary); text-align: center; }
+.law__body { display: grid; gap: 3px; font-size: 15px; line-height: 1.45; }
+.law__body b { font-weight: 500; }
+.law__body > span { color: var(--text-secondary); }
+.law__src { font-size: 12px; color: var(--text-secondary); opacity: .8; }
+.law__delays-title { margin: 14px 0 8px; font-size: 14px; font-weight: 600; }
+
+.report__block--next { background: color-mix(in srgb, var(--fam) 7%, transparent); }
+.needs { display: grid; gap: 12px; margin: 12px 0 0; padding: 0; list-style: none; }
+.needs__item { display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 10px; align-items: start; font-size: 15px; line-height: 1.45; }
+.needs__item > .ti { width: 20px; height: 20px; margin-top: 2px; color: var(--fam); }
+.needs__item > span { display: grid; gap: 2px; }
+.needs__item b { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.needs__item b em { padding: 1px 8px; border-radius: 999px; background: #F08A3C; color: #1A0E04; font-size: 12px; font-style: normal; font-weight: 600; }
+.needs__item > span > span { color: var(--text-secondary); }
+.needs__item.is-urgent { padding: 10px 12px; margin-inline: -4px; border-radius: 12px; border: 1px solid rgba(240, 138, 60, .55); background: rgba(240, 138, 60, .08); }
+.needs__item.is-urgent > .ti { color: #F6B27C; }
+
+.asst__pdf {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 50px;
+  margin-block-start: 12px;
+  border: 1px solid var(--hairline-dark);
+  border-radius: 25px;
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.asst__pdf .ti { width: 20px; height: 20px; }
+.asst__pdf:hover, .asst__pdf:focus-visible { border-color: var(--text-secondary); outline: 0; }
+[data-after] .asst__go + .asst__go { margin-block-start: 10px; }
+
+/* ---------- PDF (print) — plain and readable; the designed version comes later ---------- */
+@media print {
+  @page { margin: 14mm; }
+  html, body, body.asst-page { background: #fff !important; color: #111 !important; }
+  .intake-header, .asst__top, [data-after], .asst__legal, .gate, .prep { display: none !important; }
+  .asst { max-width: none; padding: 0; }
+  .asst__h { color: #111; font-size: 22px; }
+  .report, .report__block, .report__next, .report__head, .report__safety, .report__block--next, .needs__item.is-urgent {
+    background: #fff !important; border-color: #ccc !important; box-shadow: none !important;
+  }
+  .report, .report * { color: #111 !important; }
+  .report .ti { color: #555 !important; }
+  .locked { max-height: none !important; overflow: visible !important; }
+  .locked::after { display: none !important; }
+  .locked > .report__block > :not(h2) { filter: none !important; opacity: 1 !important; }
+  .law__row, .steps__item, .needs__item, .report__list li, h2.report__label { break-inside: avoid; }
+  h2.report__label { break-after: avoid; }
+  .steps__here, .steps__item.is-here .steps__n, .needs__item b em { border: 1px solid #111; background: #fff !important; }
+}

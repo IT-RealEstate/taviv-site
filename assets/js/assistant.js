@@ -239,13 +239,68 @@
     lines.push('הנזק: ' + c.label, 'המצב: ' + s.label);
     lines.push('כבר נעשה: ' + (parts.done.length ? names(parts.done, 'q').join(' · ') : 'עוד לא'));
     if (parts.flags.length) { lines.push('לתשומת לב: ' + names(parts.flags, 'q').join(' · ')); }
-    lines.push('אשמח לבדיקת התאמה ראשונית.');
+    lines.push((data.doc.next && data.doc.next.waLine) || 'אשמח לבדיקת התאמה ראשונית.');
     return lines;
   }
   function waUrl(lines) { return 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(lines.join('\n')); }
 
+  function block(ic, title, body, cls) {
+    return '<section class="report__block' + (cls ? ' ' + cls : '') + '"><h2 class="report__label">' + icon(ic) + esc(title) + '</h2>' + body + '</section>';
+  }
+
+  function situationHtml(s) {
+    var x = (data.doc.situations || {})[s.stage];
+    if (!x) { return ''; }
+    return block('clock', data.doc.sections.situation,
+      '<p class="report__lead">' + esc(x.lead) + '</p><p class="report__text">' + esc(x.text) + '</p>');
+  }
+
+  function processHtml(s) {
+    var P = data.doc.process;
+    if (!P) { return ''; }
+    var here = P.here[s.stage];
+    return block('list', data.doc.sections.process,
+      '<ol class="steps">' + P.steps.map(function (x, i) {
+        return '<li class="steps__item' + (i === here ? ' is-here' : '') + '">' +
+          '<span class="steps__n">' + (i + 1) + '</span>' +
+          '<span class="steps__body"><b>' + esc(x.title) + '</b>' +
+          (i === here ? '<em class="steps__here">אתם כאן</em>' : '') +
+          '<span>' + esc(x.text) + '</span></span></li>';
+      }).join('') + '</ol>' +
+      '<p class="report__text is-dim">' + esc(P.note) + '</p>');
+  }
+
+  function lawHtml() {
+    var L = data.doc.law;
+    if (!L) { return ''; }
+    return block('scale', data.doc.sections.law,
+      '<ul class="law">' + L.rows.map(function (x) {
+        return '<li class="law__row"><span class="law__when"><b>' + esc(x.when) + '</b>' +
+          (x.unit ? '<small>' + esc(x.unit) + '</small>' : '') + '</span>' +
+          '<span class="law__body"><b>' + esc(x.title) + '</b><span>' + esc(x.text) + '</span>' +
+          '<small class="law__src">' + esc(x.src) + '</small></span></li>';
+      }).join('') + '</ul>' +
+      '<p class="law__delays-title">מה יכול לעכב</p>' +
+      '<ul class="report__list is-todo">' + L.delays.map(function (t) {
+        return '<li>' + icon('clock') + '<span>' + esc(t) + '</span></li>';
+      }).join('') + '</ul>' +
+      '<p class="report__ask"><small>ולכן</small>' + esc(L.urgency) + '</p>' +
+      '<p class="report__ref">' + esc(L.note) + '</p>');
+  }
+
+  function nextHtml() {
+    var N = data.doc.next;
+    if (!N) { return ''; }
+    return block('check', data.doc.sections.next,
+      '<p class="report__text">' + esc(N.lead) + '</p>' +
+      '<ul class="needs">' + N.items.map(function (x) {
+        return '<li class="needs__item' + (x.urgent ? ' is-urgent' : '') + '">' + icon(x.icon) +
+          '<span><b>' + esc(x.title) + (x.urgent ? '<em>בהקדם</em>' : '') + '</b><span>' + esc(x.text) + '</span></span></li>';
+      }).join('') + '</ul>', 'report__block--next');
+  }
+
   function lockedHtml(c, s, parts) {
-    var T = data.doc.sections, r = theRuling(c, s), html = '';
+    var T = data.doc.sections, r = theRuling(c, s), html = situationHtml(s);
     if (parts.missing.length) {
       html += '<section class="report__block"><h2 class="report__label">' + icon('search') + esc(T.missing) + ' (' + parts.missing.length + ')</h2>' +
         '<ul class="report__list is-todo">' + parts.missing.map(function (a) {
@@ -265,20 +320,20 @@
         '<p class="report__ref">' + esc(r.court) + ', ' + esc(r.year) + ' · <span dir="rtl">' + esc(r.number) + '</span></p>' +
         '<p class="report__ref">' + esc(data.doc.rulingNote) + '</p></section>';
     }
+    html += processHtml(s) + lawHtml();
     html += '<section class="report__block"><h2 class="report__label">' + icon('check') + esc(T.appraiser) + '</h2>' +
       '<ul class="report__list is-fam">' + c.doc.appraiser.map(function (t) {
         return '<li>' + icon('tick') + '<span>' + esc(t) + '</span></li>';
       }).join('') + '</ul></section>';
-    return html;
+    return html + nextHtml();
   }
 
   function gateHtml(c, s, parts) {
     var T = data.doc.sections, r = theRuling(c, s);
-    var inside = [];
+    var inside = [T.situation];
     if (parts.missing.length) { inside.push(T.missing + ' (' + parts.missing.length + ')'); }
-    inside.push(T.stuck);
     if (r) { inside.push(T.ruling); }
-    inside.push(T.appraiser);
+    inside.push(T.process, T.law, T.next);
     return '<form class="gate" novalidate autocomplete="on" data-gate>' +
       '<p class="gate__title">' + icon('lock') + 'המסמך המלא נפתח אחרי השארת פרטים</p>' +
       '<ul class="gate__inside">' + inside.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
@@ -297,10 +352,17 @@
   }
 
   function afterHtml(c, s, parts) {
+    var N = data.doc.next || {};
+    var wa = '<a class="asst__go asst__go--wa" href="' + esc(waUrl(summaryLines(c, s, parts, true))) + '" rel="noopener">' +
+      icon('whatsapp') + 'שליחת הסיכום בוואטסאפ</a>';
+    // TAVIV APP takes over the signing and the uploads once its address is set in cases.json
+    var app = N.appUrl ? '<a class="asst__go" href="' + esc(N.appUrl + (N.appUrl.indexOf('?') < 0 ? '?' : '&') + 'case=' + encodeURIComponent(c.id) + (st.leadId ? '&lead=' + encodeURIComponent(st.leadId) : '')) + '">' +
+      'חתימה על כתב מינוי והעלאת החומר' + icon('arrow') + '</a>' : '';
     return '<p class="gate__open" role="status">' + icon('tick') + 'המסמך פתוח. הפרטים התקבלו.</p>' +
-      '<a class="asst__go asst__go--wa" href="' + esc(waUrl(summaryLines(c, s, parts, true))) + '" rel="noopener">' +
-        icon('whatsapp') + 'שליחת הסיכום בוואטסאפ</a>' +
-      '<p class="asst__note">ההודעה כבר כתובה, עם הפרטים שלכם. היא נשלחת לטביב שמאות ונשארת אצלכם בשיחה.</p>' +
+      app + wa +
+      '<p class="asst__note">' + (app ? 'הסיכום נשלח לטביב שמאות ונשאר אצלכם בשיחה.'
+        : 'ההודעה כבר כתובה, עם הפרטים שלכם ובקשה לכתב מינוי. היא נשלחת לטביב שמאות ונשארת אצלכם בשיחה.') + '</p>' +
+      '<button type="button" class="asst__pdf" data-pdf>' + icon('doc') + 'הורדה כ־PDF</button>' +
       (c.guide ? '<a class="asst__guide" href="' + esc(c.guide.url) + '"><small>לקריאה בזמנכם</small>' + esc(c.guide.title) + '</a>' : '');
   }
 
@@ -435,6 +497,20 @@
       locked.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
     }
   }
+
+  function printDoc() {
+    var was = document.title;
+    var day = new Date().toLocaleDateString('he-IL').replace(/\./g, '-');
+    document.title = 'טביב שמאות - סיכום מקרה - ' + day;
+    var back = function () { document.title = was; window.removeEventListener('afterprint', back); };
+    window.addEventListener('afterprint', back);
+    window.print();
+    window.setTimeout(back, 2000);
+  }
+  root.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-pdf]');
+    if (b && st.unlocked) { printDoc(); }
+  });
 
   fetch(CASES_URL).then(function (r) { return r.json(); }).then(function (json) {
     data = json;
