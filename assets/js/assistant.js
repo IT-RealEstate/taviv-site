@@ -311,11 +311,12 @@
     }
     html += timelineHtml(s);
     html += '<section class="report__block"><h2 class="report__label">' + icon('check') + esc(T.appraiser) + '</h2>' +
+      // the whole case, handled on their behalf; the same for every kind of damage
       (data.doc.appraiserLead ? '<p class="report__lead">' + esc(data.doc.appraiserLead) + '</p>' : '') +
-      '<ul class="report__list is-fam">' + c.doc.appraiser.slice(0, 3).map(function (t) {
+      '<ul class="report__list is-fam">' + (data.doc.appraiserSteps || []).slice(0, 3).map(function (t) {
         return '<li>' + icon('tick') + '<span>' + esc(t) + '</span></li>';
       }).join('') + '</ul>' +
-      (data.doc.appraiserNote ? '<p class="report__text is-dim">' + esc(data.doc.appraiserNote) + '</p>' : '') + '</section>';
+      (data.doc.appraiserContrast ? '<p class="report__text is-dim">' + esc(data.doc.appraiserContrast) + '</p>' : '') + '</section>';
     return html + nextHtml(parts);
   }
 
