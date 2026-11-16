@@ -12,7 +12,7 @@ const LEAD = 'LD-' + 'c'.repeat(64);
 const EV = 'ev_' + 'f'.repeat(32);
 
 function load({ pixel = true, record = null, cookies = '', adLeads = null } = {}) {
-  const src = pixel ? RAW.replace("var META_PIXEL_ID = '';", "var META_PIXEL_ID = '" + PIXEL + "';") : RAW;
+  const src = RAW.replace(/var META_PIXEL_ID = '[0-9]*';/, "var META_PIXEL_ID = '" + (pixel ? PIXEL : '') + "';");
   const local = new Map();
   if (record) local.set('tv_measure_consent', JSON.stringify(record));
   if (adLeads) local.set('tv_ad_leads', JSON.stringify(adLeads));
