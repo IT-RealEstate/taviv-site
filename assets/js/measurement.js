@@ -333,7 +333,10 @@
     var row = 'display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4;cursor:pointer;';
     var chk = 'width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:#1F8EB1;';
     var html = '<div style="width:100%;max-width:520px;display:grid;gap:10px">' +
-      '<p style="margin:0;font-size:14.5px;line-height:1.45">שתי שאלות קצרות. אפשר לסרב לשתיהן, והאתר והטופס ממשיכים לעבוד כרגיל. ' +
+      '<p style="margin:0;font-size:14.5px;line-height:1.45">' +
+      (FEATURE_FLAGS.clarity && FEATURE_FLAGS.meta_pixel
+        ? 'שתי שאלות קצרות. אפשר לסרב לשתיהן, והאתר והטופס ממשיכים לעבוד כרגיל. '
+        : 'שאלה קצרה. אפשר לסרב, והאתר והטופס ממשיכים לעבוד כרגיל. ') +
       '<a href="/legal/#s16" style="color:#ECEEEF;text-decoration:underline">פרטים</a></p>';
     if (FEATURE_FLAGS.clarity) {
       html += '<label style="' + row + '"><input type="checkbox" data-consent-a style="' + chk + '">' +
