@@ -13,7 +13,7 @@
   var DEMO = !!PATHS.demo;
   var cfg = window.INTAKE_CONFIG || {};
   var WA_NUMBER = cfg.whatsappNumber || '972552617625';
-  var LEGAL_RELEASE = '2026-11-10.1';          // same notice the /check/ form shows
+  var LEGAL_RELEASE = '2026-11-16.1';          // same notice the /check/ form shows
   var STORE_KEY = 'tv_asst';
   var icon = window.TAVIV_ICON || function () { return ''; };
   var logo = window.TAVIV_LOGO || function () { return ''; };
@@ -45,9 +45,15 @@
 
   var data = null;
   var startedAt = new Date().toISOString();
+  var entry = {};
+  try { entry = JSON.parse(sessionStorage.getItem('tv_asst_entry') || 'null') || {}; } catch (e) {}
+  if (params['case'] || params.state) {
+    entry = { caseId: params['case'] || '', stage: params.state || '' };
+    try { sessionStorage.setItem('tv_asst_entry', JSON.stringify(entry)); } catch (e) {}
+  }
   var st = {
-    caseId: params['case'] || '',
-    stage: params.state || '',     // the general stage picked on the home page, if any
+    caseId: entry.caseId || '',
+    stage: entry.stage || '',      // the general stage picked on the home page, if any
     stateId: '',                   // the answer that fits this kind of damage
     done: {},
     name: '', phone: '', email: '', unlocked: false, leadId: ''
@@ -357,6 +363,9 @@
       '<p class="gate__error" role="alert" hidden></p>' +
       '<button type="submit" class="asst__go">פתיחת המסמך המלא</button>' +
       '<p class="gate__consent">' + esc(data.doc.consent) + ' <a href="' + esc(PATHS.legal || '/legal/') + '">לקריאה</a></p>' +
+      (window.TAVIV_CONSENT && window.TAVIV_CONSENT.ads()
+        ? '<p class="gate__consent">אישרתם מדידת פרסום, ולכן ל־Meta יישלח דיווח על הפנייה, עם אימייל וטלפון מוצפנים ובלי פרטי המקרה. <a href="/legal/#s16">פרטים ושינוי הבחירה</a></p>'
+        : '') +
       (DEMO ? '<p class="gate__consent">דמו: הפרטים לא נשלחים לשום מקום.</p>' : '') +
       '</form>';
   }
@@ -427,18 +436,21 @@
     return 'LD-' + hex;
   }
 
-  // same record the /check/ form saves, so the lead lands in the same place
+  // same record the /check/ form saves, so the lead lands in the same place.
+  // Resolves to the backend's answer (saved / already_saved / rejected / failed); never rejects.
   function sendLead(c, s, parts, honeypot) {
-    if (DEMO) { return new Promise(function (ok) { window.setTimeout(ok, 500); }); }
-    if (!cfg.endpointUrl || typeof fetch !== 'function') { return Promise.reject(new Error('no_endpoint')); }
+    if (DEMO) { return new Promise(function (ok) { window.setTimeout(function () { ok({ state: 'saved', eventId: '' }); }, 500); }); }
+    var L = window.TAVIV_LEAD;
+    if (!L) { return Promise.resolve({ state: 'failed', code: 'transport_unavailable', retryable: false }); }
     var A = window.ATTRIBUTION, rec = A && A.get ? A.get() : {};
     var names = function (list) { return list.map(function (a) { return a.q; }).join(' · ') || 'עוד לא'; };
     var body = {
       lead_id: st.leadId,
       source: A && A.source ? A.source() : '',
-      cta_location: 'assistant_document',
+      cta_location: '',                      // the entry point is recorded in entry_point / source_page
+      entry_point: 'assistant',
       service_interest: '', service_price_revealed: '', service_log: '',
-      browser_context: '',
+      browser_context: L.browserContext(),
       damage_type: c.intake || 'OTHER',
       case_state: s.intake || 'UNSURE',
       full_name: st.name,
@@ -454,13 +466,9 @@
       form_started_at: startedAt,
       utm_source: rec.utm_source || '', utm_medium: rec.utm_medium || '', utm_campaign: rec.utm_campaign || '',
       utm_content: rec.utm_content || '', utm_term: rec.utm_term || '', fbclid: rec.fbclid || '',
-      referrer: rec.referrer || '', landing_route: rec.landing_route || '', source_page: 'assistant'
+      referrer: rec.referrer || '', landing_route: rec.landing_route || '', source_page: '/assistant/'
     };
-    return fetch(cfg.endpointUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(body)
-    }).then(function (r) { if (!r.ok) { throw new Error('http_error'); } return r.json(); });
+    return L.submit(L.withMeasurement(body));
   }
 
   function bindGate(c, s, parts) {
@@ -485,14 +493,28 @@
       }
       err.hidden = true;
       st.name = name.value.trim(); st.phone = phone.value.trim(); st.email = email.value.trim();
+      // the id is kept before sending, so a retry or a refresh resends the same lead
       if (!st.leadId) { st.leadId = newLeadId(); }
-      btn.disabled = true; btn.textContent = 'פותחים את המסמך…';
+      save();
+      btn.disabled = true; btn.textContent = 'שומרים את הפרטים…';
       var done = String(Math.min(parts.done.length, 4));
       measure('assistant_gate_submit', where({ done_count: done }));
-      var open = function () { st.unlocked = true; save(); unlock(c, s, parts); measure('assistant_unlock', where({ done_count: done })); };
-      // the visitor did their part: the document opens even if saving fails,
-      // and the WhatsApp message carries the same details
-      sendLead(c, s, parts, form.elements.website.value).then(open, open);
+      sendLead(c, s, parts, form.elements.website.value).then(function (result) {
+        if (result.state === 'saved' || result.state === 'already_saved') {
+          if (window.TAVIV_LEAD) { window.TAVIV_LEAD.afterSave(result, st.leadId); }
+          st.unlocked = true; save(); unlock(c, s, parts);
+          measure('assistant_unlock', where({ done_count: done }));
+          return;
+        }
+        // not saved: say so, keep everything that was typed, offer a retry and WhatsApp
+        btn.disabled = false; btn.textContent = 'לנסות שוב';
+        measure('assistant_save_error', { error_code: window.TAVIV_LEAD ? window.TAVIV_LEAD.errorCode(result) : 'unknown_safe' });
+        err.innerHTML = esc(result.state === 'rejected'
+            ? 'לא הצלחנו לקבל את הפרטים. כדאי לבדוק את השם, הטלפון והאימייל ולנסות שוב.'
+            : 'הפרטים עוד לא נשמרו אצלנו. אפשר לנסות שוב בעוד רגע, או לשלוח לנו את הסיכום בוואטסאפ.') +
+          ' <a class="gate__wa" href="' + esc(waUrl(summaryLines(c, s, parts, true))) + '" rel="noopener">שליחה בוואטסאפ</a>';
+        err.hidden = false;
+      });
     });
   }
 

@@ -15,11 +15,20 @@
   // The id is public (it appears in the page anyway); it is not a key.
   var CLARITY_PROJECT_ID = 'zbeqvw0p4u';
   var CONSENT_KEY = 'tv_measure_consent';
-  var CONSENT_VERSION = '2026-11-10.1';
+  // 2026-11-16.1: two separate choices — usage measurement (Clarity) and advertising (Meta).
+  // A record from an older version is ignored, so the visitor is asked again.
+  var CONSENT_VERSION = '2026-11-16.1';
+  var AD_LEADS_KEY = 'tv_ad_leads';          // lead ids sent to Meta with consent, for withdrawal
+  var AD_LEADS_MAX_DAYS = 90;
+
+  // Meta dataset (Pixel) id. Public by design (it appears in the page anyway); it is not a key.
+  // Empty = the Pixel never loads and nothing is sent to Meta from the browser.
+  var META_PIXEL_ID = '';
 
   var FEATURE_FLAGS = {
     ga4: false,
     clarity: /^[a-z0-9]{6,16}$/.test(CLARITY_PROJECT_ID),
+    meta_pixel: /^[0-9]{10,20}$/.test(META_PIXEL_ID),
     google_ads: false
   };
   if (Object.freeze) Object.freeze(FEATURE_FLAGS);
@@ -115,6 +124,7 @@
     assistant_step_view: spec(['assistant_step'], ['damage_case', 'case_stage'], ['assistant'], true, ['assistant_step']),
     assistant_gate_error: spec(['field_id', 'error_code'], [], ['assistant'], false, ['field_id', 'error_code']),
     assistant_gate_submit: spec(['event_id', 'damage_case', 'case_stage'], ['done_count'], ['assistant'], false, ['event_id']),
+    assistant_save_error: spec(['error_code'], [], ['assistant'], false, ['error_code']),
     assistant_unlock: spec(['damage_case', 'case_stage'], ['done_count'], ['assistant'], true, ['damage_case', 'case_stage']),
     assistant_pdf: spec(['source_page'], ['damage_case'], ['assistant'], false, ['source_page'])
   };
@@ -262,7 +272,7 @@
 
   // the only place an event leaves the browser; nothing is sent while every flag is off
   function send(name, event) {
-    if (!FEATURE_FLAGS.clarity || TEST_MODE || !consented() || typeof window.clarity !== 'function') return;
+    if (!FEATURE_FLAGS.clarity || TEST_MODE || !consented('analytics') || typeof window.clarity !== 'function') return;
     try {
       window.clarity('event', name);
       var tags = ['source_page', 'damage_case', 'case_stage', 'assistant_step', 'cta_location', 'device_category'];
@@ -272,43 +282,80 @@
     } catch (e) {}
   }
 
-  /* ---------- consent: nothing is measured before "מאשרים" ---------- */
-  function readConsent() {
+  /* ---------- consent: two separate choices, nothing runs before a "yes" ----------
+     analytics → Microsoft Clarity (usage measurement)
+     ads       → Meta Pixel in the browser + the server copy of the same conversion (CAPI)
+     The record: { v: version, a: 'yes'|'no', m: 'yes'|'no', t: ISO time of the choice } */
+  function readRecord() {
     try {
       var v = JSON.parse(window.localStorage.getItem(CONSENT_KEY) || 'null');
-      return v && v.v === CONSENT_VERSION ? v.c : '';
-    } catch (e) { return ''; }
+      return v && v.v === CONSENT_VERSION && (v.a === 'yes' || v.a === 'no') && (v.m === 'yes' || v.m === 'no') ? v : null;
+    } catch (e) { return null; }
   }
-  function writeConsent(choice) {
-    try { window.localStorage.setItem(CONSENT_KEY, JSON.stringify({ v: CONSENT_VERSION, c: choice })); } catch (e) {}
+  function writeRecord(analytics, ads) {
+    var rec = { v: CONSENT_VERSION, a: analytics, m: ads, t: new Date().toISOString() };
+    try { window.localStorage.setItem(CONSENT_KEY, JSON.stringify(rec)); } catch (e) {}
+    return rec;
   }
-  function consented() { return readConsent() === 'yes'; }
+  function consented(purpose) {
+    var r = readRecord();
+    if (!r) return false;
+    return purpose === 'ads' ? r.m === 'yes' : r.a === 'yes';
+  }
+  function bannerNeeded() {
+    return (FEATURE_FLAGS.clarity || FEATURE_FLAGS.meta_pixel) && !TEST_MODE && !readRecord();
+  }
+
+  var consentListeners = [];
+  function onConsentChange(fn) { if (typeof fn === 'function') consentListeners.push(fn); }
+
+  function applyChoice(analytics, ads) {
+    var before = readRecord();
+    var hadAds = !!(before && before.m === 'yes');
+    writeRecord(analytics, ads);
+    if (analytics === 'yes') loadClarity();
+    if (ads === 'yes') { loadPixel(); }
+    else if (hadAds) { withdrawAds(); }
+    for (var i = 0; i < consentListeners.length; i++) { try { consentListeners[i](readRecord()); } catch (e) {} }
+  }
 
   function consentBanner() {
-    if (!FEATURE_FLAGS.clarity || TEST_MODE || readConsent() || document.getElementById('tv-consent')) return;
+    if (!bannerNeeded() || document.getElementById('tv-consent')) return;
     var box = document.createElement('div');
     box.id = 'tv-consent';
     box.setAttribute('role', 'region');
-    box.setAttribute('aria-label', 'הסכמה למדידת שימוש');
+    box.setAttribute('aria-label', 'בחירות פרטיות');
     box.setAttribute('dir', 'rtl');
     box.style.cssText = 'position:fixed;inset-inline:0;bottom:0;z-index:2147483000;display:flex;justify-content:center;' +
       'padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#1A2024;border-top:1px solid #1F8EB1;' +
       'box-shadow:0 -6px 24px rgba(0,0,0,.45);font-family:inherit;color:#ECEEEF;';
     var btn = 'min-height:44px;padding:0 18px;border-radius:22px;font:inherit;font-size:15px;font-weight:600;cursor:pointer;';
-    box.innerHTML = '<div style="width:100%;max-width:520px;display:grid;gap:10px">' +
-      '<p style="margin:0;font-size:14.5px;line-height:1.45">אפשר לראות איך משתמשים באתר, כדי לשפר אותו? ' +
-      'בלי טקסט שהקלדתם ובלי עוגיות. <a href="/legal/#s16" style="color:#ECEEEF;text-decoration:underline">פרטים</a></p>' +
-      '<div style="display:flex;gap:10px">' +
-      '<button type="button" data-consent="yes" style="' + btn + 'flex:1;border:0;background:#1F8EB1;color:#080A0C">מאשרים</button>' +
+    var row = 'display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4;cursor:pointer;';
+    var chk = 'width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:#1F8EB1;';
+    var html = '<div style="width:100%;max-width:520px;display:grid;gap:10px">' +
+      '<p style="margin:0;font-size:14.5px;line-height:1.45">שתי שאלות קצרות. אפשר לסרב לשתיהן, והאתר והטופס ממשיכים לעבוד כרגיל. ' +
+      '<a href="/legal/#s16" style="color:#ECEEEF;text-decoration:underline">פרטים</a></p>';
+    if (FEATURE_FLAGS.clarity) {
+      html += '<label style="' + row + '"><input type="checkbox" data-consent-a style="' + chk + '">' +
+        '<span><strong>שיפור האתר</strong> · לראות איך משתמשים באתר (Microsoft Clarity), בלי טקסט שהקלדתם.</span></label>';
+    }
+    if (FEATURE_FLAGS.meta_pixel) {
+      html += '<label style="' + row + '"><input type="checkbox" data-consent-m style="' + chk + '">' +
+        '<span><strong>מדידת פרסום ב־Meta</strong> · לדווח ל־Meta כשפנייה נשלחת, כדי למדוד אילו מודעות עובדות. כולל עוגיות של Meta, ופרטי קשר מוצפנים אם תשאירו פנייה.</span></label>';
+    }
+    html += '<div style="display:flex;gap:10px">' +
+      '<button type="button" data-consent="save" style="' + btn + 'flex:1;border:0;background:#1F8EB1;color:#080A0C">שמירת הבחירה</button>' +
       '<button type="button" data-consent="no" style="' + btn + 'flex:1;border:1px solid #A7AFB5;background:none;color:#ECEEEF">לא תודה</button>' +
       '</div></div>';
+    box.innerHTML = html;
     box.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-consent]');
       if (!b) return;
-      var choice = b.getAttribute('data-consent');
-      writeConsent(choice);
+      var a = box.querySelector('[data-consent-a]');
+      var m = box.querySelector('[data-consent-m]');
+      var save = b.getAttribute('data-consent') === 'save';
+      applyChoice(save && a && a.checked ? 'yes' : 'no', save && m && m.checked ? 'yes' : 'no');
       box.parentNode.removeChild(box);
-      if (choice === 'yes') loadClarity();
     });
     document.body.appendChild(box);
   }
@@ -316,19 +363,153 @@
     var nodes = document.querySelectorAll('[data-consent-reset]');
     for (var i = 0; i < nodes.length; i++) {
       nodes[i].addEventListener('click', function () {
+        var had = readRecord();
         try { window.localStorage.removeItem(CONSENT_KEY); } catch (e) {}
+        // until a new choice is saved nothing new is sent; a previous "yes" to ads is treated as withdrawn
+        if (had && had.m === 'yes') withdrawAds();
         consentBanner();
       });
     }
   }
 
   function loadClarity() {
-    if (!FEATURE_FLAGS.clarity || TEST_MODE || !consented() || typeof window.clarity === 'function') return;
+    if (!FEATURE_FLAGS.clarity || TEST_MODE || !consented('analytics') || typeof window.clarity === 'function') return;
     (function (c, l, a, r, i, t, y) {
       c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
       t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i;
       y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
     })(window, document, 'clarity', 'script', CLARITY_PROJECT_ID);
+  }
+
+  /* ---------- Meta Pixel: only with advertising consent ----------
+     - automatic events (button text, page metadata) are switched off;
+     - the page address sent to Meta carries no case details: case/state and any other
+       non-campaign parameter is removed from the address bar before the Pixel starts
+       (the section anchor after # is kept; it names a page section, not a person or case);
+     - the only conversion sent is Lead, after the server confirmed the save, with the
+       server's event id, so the browser and server copies are counted once. */
+  var pixelStarted = false;
+  var CAMPAIGN_PARAMS = /^(utm_(source|medium|campaign|content|term)|fbclid)$/;
+
+  function cleanAddressForPixel() {
+    try {
+      if (!window.history || typeof window.history.replaceState !== 'function') return;
+      var url = new URL(window.location.href);
+      var keep = new URLSearchParams();
+      var changed = false;
+      url.searchParams.forEach(function (v, k) { if (CAMPAIGN_PARAMS.test(k)) keep.append(k, v); else changed = true; });
+      if (!changed) return;
+      var q = keep.toString();
+      window.history.replaceState(window.history.state, '', url.pathname + (q ? '?' + q : '') + url.hash);
+    } catch (e) {}
+  }
+
+  function loadPixel() {
+    if (!FEATURE_FLAGS.meta_pixel || TEST_MODE || !consented('ads')) return;
+    if (pixelStarted) { try { window.fbq('consent', 'grant'); } catch (e) {} return; }
+    pixelStarted = true;
+    var start = function () {
+      cleanAddressForPixel();
+      /* eslint-disable */
+      !function (f, b, e, v, n, t, s) {
+        if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+        if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
+        t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+      }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+      /* eslint-enable */
+      window.fbq('consent', 'grant');
+      window.fbq('set', 'autoConfig', false, META_PIXEL_ID);
+      window.fbq('init', META_PIXEL_ID);
+      window.fbq('track', 'PageView');
+    };
+    // page scripts read their own parameters first; the address is cleaned after that
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+    else start();
+  }
+
+  function expireCookie(name) {
+    var host = window.location.hostname;
+    var parts = host.split('.');
+    var domains = ['', host];
+    if (parts.length >= 2) domains.push('.' + parts.slice(-2).join('.'));
+    if (parts.length >= 3) domains.push('.' + parts.slice(-3).join('.'));
+    for (var i = 0; i < domains.length; i++) {
+      document.cookie = name + '=; Max-Age=0; path=/' + (domains[i] ? '; domain=' + domains[i] : '');
+    }
+  }
+
+  function readAdLeads() {
+    try {
+      var list = JSON.parse(window.localStorage.getItem(AD_LEADS_KEY) || '[]');
+      var cutoff = Date.now() - AD_LEADS_MAX_DAYS * 864e5;
+      return Array.isArray(list) ? list.filter(function (x) { return x && typeof x.id === 'string' && x.t > cutoff; }) : [];
+    } catch (e) { return []; }
+  }
+  function rememberAdLead(leadId) {
+    if (typeof leadId !== 'string' || !/^LD-[0-9a-f]{64}$/.test(leadId)) return;
+    var list = readAdLeads().filter(function (x) { return x.id !== leadId; });
+    list.push({ id: leadId, t: Date.now() });
+    try { window.localStorage.setItem(AD_LEADS_KEY, JSON.stringify(list.slice(-20))); } catch (e) {}
+  }
+
+  // withdrawal: stop the Pixel, remove Meta's cookies, and tell the server so queued and
+  // later reports about leads from this browser are not sent
+  function withdrawAds() {
+    try { if (typeof window.fbq === 'function') window.fbq('consent', 'revoke'); } catch (e) {}
+    expireCookie('_fbp');
+    expireCookie('_fbc');
+    var leads = readAdLeads();
+    if (!leads.length) return;
+    var cfg = window.INTAKE_CONFIG || {};
+    if (!cfg.endpointUrl || typeof fetch !== 'function') return;
+    try {
+      fetch(cfg.endpointUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        keepalive: true,
+        body: JSON.stringify({
+          op: 'consent', client_marker: cfg.clientMarker || '',
+          lead_ids: leads.map(function (x) { return x.id; }),
+          ad_consent: 'withdrawn', consent_version: CONSENT_VERSION
+        })
+      }).then(function (r) { return r.json(); }).then(function (json) {
+        if (json && json.ok === true) { try { window.localStorage.removeItem(AD_LEADS_KEY); } catch (e) {} }
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
+  function readCookie(name) {
+    var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  // fields that go with a lead only when the visitor agreed to advertising measurement
+  function adLeadFields() {
+    var rec = readRecord();
+    if (!FEATURE_FLAGS.meta_pixel || !rec || rec.m !== 'yes') {
+      return { ad_consent: rec ? 'denied' : 'unset', ad_consent_version: rec ? CONSENT_VERSION : '' };
+    }
+    var fbp = readCookie('_fbp');
+    var fbc = readCookie('_fbc');
+    if (!fbc && window.ATTRIBUTION && typeof window.ATTRIBUTION.fbc === 'function') fbc = window.ATTRIBUTION.fbc();
+    return {
+      ad_consent: 'granted',
+      ad_consent_version: CONSENT_VERSION,
+      ad_consent_at: rec.t || '',
+      fbp: /^fb\.[0-9]\.[0-9]{10,13}\.[0-9]{1,30}$/.test(fbp) ? fbp : '',
+      fbc: /^fb\.[0-9]\.[0-9]{10,13}\.[A-Za-z0-9_\-]{10,500}(\.[A-Za-z0-9_\-]{1,40})?$/.test(fbc) ? fbc : '',
+      client_user_agent: String(navigator.userAgent || '').slice(0, 512),
+      event_source_url: window.location.origin + window.location.pathname
+    };
+  }
+
+  // the browser copy of a saved lead. eventId comes from the server's save acknowledgement.
+  function trackLead(eventId, leadId) {
+    if (!FEATURE_FLAGS.meta_pixel || TEST_MODE || !consented('ads')) return false;
+    if (typeof eventId !== 'string' || !/^ev_[0-9a-f]{32}$/.test(eventId)) return false;
+    rememberAdLead(leadId);
+    loadPixel();
+    try { window.fbq('track', 'Lead', {}, { eventID: eventId }); return true; } catch (e) { return false; }
   }
 
   function normalizeCtaLocation(value) {
@@ -445,6 +626,17 @@
     }
   }
 
+  window.TAVIV_CONSENT = {
+    version: CONSENT_VERSION,
+    analytics: function () { return consented('analytics'); },
+    ads: function () { return consented('ads'); },
+    record: readRecord,
+    onChange: onConsentChange,
+    adLeadFields: adLeadFields,
+    trackLead: trackLead,
+    pixelEnabled: function () { return FEATURE_FLAGS.meta_pixel; }
+  };
+
   window.TAVIV_MEASUREMENT = {
     schemaVersion: SCHEMA_VERSION,
     contentVersion: CONTENT_VERSION,
@@ -467,6 +659,7 @@
   }
 
   loadClarity();
+  loadPixel();
   if (document.body) { consentBanner(); bindConsentReset(); }
   else { document.addEventListener('DOMContentLoaded', function () { consentBanner(); bindConsentReset(); }); }
   var page = currentPage();

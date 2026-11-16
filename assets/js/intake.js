@@ -55,7 +55,7 @@
     var STORAGE_KEY = 'intake_draft_v2';
     var LEAD_ID_PATTERN = /^LD-[0-9a-f]{64}$/;
 
-    var LEGAL_RELEASE = '2026-11-10.1';
+    var LEGAL_RELEASE = '2026-11-16.1';
 
     var SUBMIT_TIMEOUT_MS = 15000;
     var RETRY_DELAY_MS = 2000;
@@ -84,6 +84,7 @@
 
     var persistInFlight = false;
     var failureCount = 0;
+    var lastSaveResult = null;        // the backend's answer to the last save attempt
 
     var saveSeq = 0;
     var inFlightSeq = 0;
@@ -367,27 +368,26 @@
 
       Promise.resolve().then(function () {
         var payload = buildPayload();
+        var L = window.TAVIV_LEAD;
 
         // Parallel, fire-and-forget copy to Taviv App. Does not affect the Apps Script
         // outcome below; if the app is unreachable the visitor keeps the WhatsApp path.
-        if (window.TAVIV_APP_HANDOFF) window.TAVIV_APP_HANDOFF.create(payload);
-
-        function attempt() {
-          return sendLead(payload).then(function (json) {
-            return { confirmed: createConfirmed(json, payload.lead_id), json: json };
-          }, function () {
-            return { confirmed: false, json: null };
-          });
+        // The app gets the lead without the advertising-measurement fields.
+        if (window.TAVIV_APP_HANDOFF) {
+          window.TAVIV_APP_HANDOFF.create(L ? L.withoutMeasurement(payload) : payload);
         }
+        if (!L) return false;
 
-        return attempt().then(function (first) { return first.confirmed; });
+        // saved = the backend confirmed THIS lead_id; anything else keeps the form open
+        return L.submit(L.withMeasurement(payload)).then(function (result) {
+          lastSaveResult = result;
+          if (result.state === 'saved' || result.state === 'already_saved') {
+            L.afterSave(result, payload.lead_id);
+            return true;
+          }
+          return false;
+        });
       }).then(finish, function () { finish(false); });
-    }
-
-    function createConfirmed(json, leadId) {
-      return !!(json && json.ok === true &&
-        json.lead_id === leadId &&
-        typeof json.duplicate === 'boolean');
     }
 
     function isRetryable(json) {
@@ -447,7 +447,7 @@
       if (measurementSubmitEventId) {
         measure('intake_submit_error', {
           event_id: measurementSubmitEventId,
-          error_code: 'unknown_safe',
+          error_code: window.TAVIV_LEAD ? window.TAVIV_LEAD.errorCode(lastSaveResult) : 'unknown_safe',
           intake_step_id: 'contact'
         });
       }
@@ -458,7 +458,9 @@
         errorEl.hidden = false;
         var fb = form.querySelector('[data-submit-fallback]');
         if (fb) fb.hidden = false;
-        setSyncStatus('לא הצלחנו לאשר את שמירת הפרטים. אפשר לנסות שוב או להמשיך ב־WhatsApp.', true);
+        setSyncStatus(lastSaveResult && lastSaveResult.state === 'rejected'
+          ? 'לא הצלחנו לקבל את הפרטים בטופס. כדאי לבדוק אותם ולנסות שוב, או להמשיך ב־WhatsApp.'
+          : 'לא הצלחנו לאשר את שמירת הפרטים. אפשר לנסות שוב או להמשיך ב־WhatsApp.', true);
       }
     }
 
@@ -967,6 +969,7 @@
         service_price_revealed: attribution ? attribution.servicePriceRevealed() : '',
         service_log: attribution ? attribution.serviceLog() : '',
         browser_context: detectBrowserContext(),
+        entry_point: 'check',
         damage_type: state.damage_type,
         case_state: state.case_state,
         full_name: contactValues().full_name,

@@ -80,6 +80,18 @@
       }
     }
 
+    // Meta click id for the server copy of a conversion: Meta asks for the most recent
+    // fbclid with the time it was first seen (fb.1.<ms>.<fbclid>). First-touch fbclid above
+    // stays untouched for attribution.
+    if (params) {
+      var latest = cleanFbclid(params.get('fbclid'));
+      if (latest && latest !== record.fbclid_last) {
+        record.fbclid_last = latest;
+        record.fbclid_last_at = Date.now();
+        sawCampaign = true;
+      }
+    }
+
     if (!record.landing_route) {
       record.landing_route = window.location.pathname || '/';
     }
@@ -218,6 +230,11 @@
     serviceLog: function () {
       var r = load() || {};
       return typeof r.service_log === 'string' ? r.service_log : '';
+    },
+    fbc: function () {
+      var r = load() || {};
+      if (!r.fbclid_last || !r.fbclid_last_at) return '';
+      return 'fb.1.' + String(r.fbclid_last_at) + '.' + r.fbclid_last;
     },
     recordServiceEvent: recordServiceEvent,
     recordCtaLocation: recordCtaLocation,
