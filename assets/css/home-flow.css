@@ -101,6 +101,36 @@
 .reassure__head { font-size: 20px; line-height: 1.3; }
 .reassure__item + .reassure__item { margin-block-start: 18px; padding-block-start: 18px; }
 
+/* ---------- role: one line under the three steps ---------- */
+.s2-role__statement {
+  margin-block-start: 24px;
+  font-size: 19px;
+  line-height: var(--lh-statement);
+  color: var(--text-primary);
+}
+
+/* ---------- about: no portrait, no reading text on the home page ---------- */
+.s4-about { padding-block: 44px; }
+.s4-about__name { font-size: 32px; }
+.s4-about__proof { margin-block-start: 28px; gap: 20px; }
+
+/* ---------- closing: back to the building ---------- */
+.home-closing { padding-block: 44px 16px; }
+.home-closing__title { font-size: 24px; font-weight: 400; line-height: var(--lh-statement); color: var(--text-primary); }
+.home-closing__body { margin-block-start: 8px; max-width: 620px; font-size: 16px; line-height: var(--lh-body); color: var(--text-secondary); }
+.home-closing__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-block-start: 8px;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--brand-wordmark-accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.home-closing__link:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: 4px; }
+
 .home-routes { padding-block: 8px 56px; }
 .home-routes .s6-urgency__routes { margin-block-start: 0; }
 
@@ -116,6 +146,13 @@
   .s2-role__item { border-block-start: 0; padding-block: 0; padding-inline-start: 0; padding-block-start: 56px; }
   .s2-role__item::before { inset-block-start: 0; }
   .s2-role__item-desc { font-size: var(--size-body); margin-block-start: 8px; }
+  .s2-role__statement { margin-block-start: 44px; font-size: var(--size-statement); }
+  .s4-about { padding-block: 80px; }
+  .s4-about__name { font-size: 44px; }
+  .s4-about__proof { margin-block-start: 48px; gap: 28px; }
+  .home-closing { padding-block: 80px 24px; }
+  .home-closing__title { font-size: var(--size-statement); }
+  .home-closing__body { font-size: var(--size-body); }
   .s3-independent { padding-block: 80px; }
   .reassure { padding-block-end: 72px; }
   .reassure__head { font-size: var(--size-statement); line-height: var(--lh-statement); }

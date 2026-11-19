@@ -287,15 +287,15 @@
   .s1-hero { padding-block: 64px 80px; }
   .s1-hero__inner--v2 {
     grid-template-columns: minmax(0, 1fr) 380px;
-    grid-template-areas: "head media" "more media";
+    grid-template-areas: "head media";
     column-gap: 48px;
     row-gap: 0;
     align-items: center;
   }
-  .s1-hero__head { align-self: end; }
+  .s1-hero__head { align-self: center; }
   .s1-hero__more { align-self: start; }
   .s1-hero__inner--v2 .s1-hero__title { font-size: var(--size-hero-h1); line-height: var(--lh-hero-h1); }
-  .s1-hero__inner--v2 .s1-hero__title .line + .line { margin: 0; font-size: inherit; line-height: inherit; color: inherit; }
+  .s1-hero__inner--v2 .s1-hero__title .line + .line { margin-block-start: 14px; font-size: var(--size-lede); line-height: var(--lh-lede); color: var(--text-secondary); }
   .s1-hero__ask { margin-block-start: 22px; font-size: 19px; }
   .s1-hero__more .s1-hero__lede { margin-block-start: 18px; font-size: var(--size-lede); line-height: var(--lh-lede); color: var(--text-primary); }
   .s1-hero__more .s1-hero__optional { display: block; }
