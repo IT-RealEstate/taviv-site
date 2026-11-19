@@ -333,3 +333,21 @@ body.menu-open {
     padding-inline: 10px;
   }
 }
+
+/* Slim header (home page, owner decision 2026-11-19).
+   Below 768px the header is one row: logo, menu and wordmark on one side,
+   WhatsApp on the other. Phone and "צור קשר" live in the menu instead.
+   Desktop is unchanged; the extra phone row in the menu is mobile-only. */
+.site-menu__item--slim { display: none; }
+
+@media (max-width: 767px) {
+  .site-header--slim .site-header__inner,
+  .site-header--slim.is-compact .site-header__inner {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .site-header--slim .site-header__phone,
+  .site-header--slim .site-header__actions .btn--compact { display: none; }
+  .site-header--slim .site-menu__item--slim { display: list-item; }
+}
