@@ -23,7 +23,7 @@
 
   // Meta dataset (Pixel) id. Public by design (it appears in the page anyway); it is not a key.
   // Empty = the Pixel never loads and nothing is sent to Meta from the browser.
-  var META_PIXEL_ID = '1669575897913253';
+  var META_PIXEL_ID = '1793534535075346';
 
   var FEATURE_FLAGS = {
     ga4: false,
